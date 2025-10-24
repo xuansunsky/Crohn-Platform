@@ -3,12 +3,16 @@ package com.xuan.croprogram.config;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
 import java.util.Date;
-
+@Component
 public class JwtUtil {
 
-    private String secretKey = "mysecretkey";  // 密钥，可以从配置文件中读取，确保其保密性
+    private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256); // 密钥，可以从配置文件中读取，确保其保密性
 
     // 生成 JWT Token
     public String generateToken(String username) {
