@@ -1,0 +1,11 @@
+CREATE TABLE `experience_card` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `title` varchar(255) NOT NULL COMMENT '标题',
+  `summary` varchar(1024) DEFAULT NULL COMMENT '摘要内容',
+  `icon` varchar(50) DEFAULT '✍️' COMMENT '心情图标(Emoji)',
+  `theme` varchar(50) DEFAULT 'neon' COMMENT '卡片皮肤(neon, sunset, deepsea...)',
+  `tags` varchar(500) DEFAULT NULL COMMENT '标签(逗号分隔字符串，如: 治愈,心情)',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='经验宝库表';

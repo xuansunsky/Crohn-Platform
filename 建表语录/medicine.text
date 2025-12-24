@@ -1,0 +1,26 @@
+CREATE TABLE `medical_policies` (
+  -- 1. 身份锚点
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `city_code` varchar(20) NOT NULL COMMENT '城市身份证号 (如 110000)',
+  `city_name` varchar(50) NOT NULL COMMENT '城市名称 (如 北京市)',
+  `policy_type` varchar(20) NOT NULL COMMENT '医保类型 (employee/resident/flexible)',
+
+  -- 2. 核心业务数据
+  `is_mente` tinyint(1) DEFAULT 0 COMMENT '是否纳入门特 (1是 0否)',
+  `is_dual` tinyint(1) DEFAULT 0 COMMENT '是否支持双通道 (1是 0否)',
+  `dual_ratio` decimal(5,2) DEFAULT 0.00 COMMENT '双通道/门特报销比例',
+  `threshold` int(11) DEFAULT 0 COMMENT '住院起付线',
+  `ratio` decimal(5,2) DEFAULT 0.00 COMMENT '住院报销比例',
+  `cap` int(11) DEFAULT 0 COMMENT '年度封顶线(万)',
+  `dual_note` varchar(255) DEFAULT '' COMMENT '双通道简短备注',
+  `summary` text COMMENT '详细政策摘要/避坑指南',
+
+  -- 3. 防腐层 (元数据)
+  `contributor` varchar(50) DEFAULT '系统' COMMENT '贡献者名字',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+
+  -- 约束与索引
+  PRIMARY KEY (`id`),
+  KEY `idx_city_code` (`city_code`) USING BTREE COMMENT '给城市代码建索引，查得快'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='医保政策情报表';

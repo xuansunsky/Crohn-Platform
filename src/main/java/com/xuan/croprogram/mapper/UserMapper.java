@@ -13,6 +13,6 @@ public interface UserMapper {
     User findByPhoneNumber(String phoneNumber);
 
     // 插入用户
-    @Insert("INSERT INTO users(phone_number, password) VALUES(#{phoneNumber}, #{password})")
+    @Insert("INSERT INTO users(nick_name,phone_number, password) VALUES(#{nickName},#{phoneNumber}, #{password})")
     void insertUser(User user);
 }

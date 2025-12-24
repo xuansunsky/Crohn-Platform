@@ -15,3 +15,6 @@ spring:
       ddl-auto: update
       show-sql: true
       open-in-view: false
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true

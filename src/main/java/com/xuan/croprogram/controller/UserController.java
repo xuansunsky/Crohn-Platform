@@ -5,10 +5,12 @@ import com.xuan.croprogram.model.ApiResponse;
 import com.xuan.croprogram.model.User;
 import com.xuan.croprogram.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 public class UserController {
 
     @Autowired
@@ -36,5 +38,14 @@ public class UserController {
         } else {
             return new ApiResponse<>("手机号或密码错误！", null, 401);
         }
+    }
+    @GetMapping("/whoami")
+    public String whoAmI() {
+        // 从 Spring Security 上下文里抓取当前登录的人
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        // 如果 Filter 工作正常，这里应该能打印出你的用户名
+        // 如果没工作，这里可能是 "anonymousUser"
+        return "后端收到了！你的身份是: " + auth.getName();
     }
 }

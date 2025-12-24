@@ -39,8 +39,10 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <version>1.18.32</version> <!-- 用个新一点的版本就行 -->
+            <scope>provided</scope>
         </dependency>
+
 
         <!-- Spring Boot Test for unit testing -->
         <dependency>
