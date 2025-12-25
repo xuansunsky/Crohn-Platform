@@ -43,8 +43,8 @@ public class User {
     private String city;
 
     // 角色：USER / ADMIN
-    @Column(name = "role", length = 20)
-    private String role = "USER";
+    @Column(name = "role_id", length = 20)
+    private Long roleId;
 
     // 是否有效
     @Column(name = "is_active")

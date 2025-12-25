@@ -1,7 +1,13 @@
 package com.xuan.croprogram.model;
 
+import lombok.Data;
+import lombok.Getter;
+
+
+@Data
 public class ApiResponse<T> {
 
+    // Getters 和 Setters
     private String message;
     private T data;
     private int status;
@@ -13,28 +19,5 @@ public class ApiResponse<T> {
         this.status = status;
     }
 
-    // Getters 和 Setters
-    public String getMessage() {
-        return message;
-    }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public void setData(T data) {
-        this.data = data;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
 }

@@ -9,18 +9,29 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
 public class JwtUtil {
 
     private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256); // 密钥，可以从配置文件中读取，确保其保密性
 
-    // 生成 JWT Token
-    public String generateToken(String username) {
+    // JwtUtil.java
+
+    // 之前的：public String generateToken(String phoneNumber)
+// 升级版：
+    public String generateToken(String phoneNumber, Long roleId) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("phoneNumber", phoneNumber);
+        claims.put("roleId", roleId); // ✅ 把职位刻在工牌上
+
         return Jwts.builder()
-                .setSubject(username)  // 设置 Token 的主体（通常是用户名或用户ID）
-                .setIssuedAt(new Date())  // 设置发行时间
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))  // 设置过期时间（1小时）
-                .signWith(SignatureAlgorithm.HS256, secretKey)  // 使用 HMAC 签名算法和密钥
+                .setClaims(claims) // 把这些信息都塞进去
+                .setSubject(phoneNumber)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24小时有效期
+                .signWith(SignatureAlgorithm.HS256, secretKey) // 你的秘钥
                 .compact();
     }
 
@@ -37,7 +48,19 @@ public class JwtUtil {
                 .parseClaimsJws(token)  // 解析 token
                 .getBody();
     }
+    // 在 JwtUtil 类中增加这个方法
+    public Long getRoleIdFromToken(String token) {
+        // 1. 调用你写好的解析方法拿到所有的 Claims
+        Claims claims = extractAllClaims(token);
 
+        // 2. 从 claims 中取出 roleId
+        // 因为你存进去的时候是 Long，这里取出来时强转或者指定类型即可
+        Object roleId = claims.get("roleId");
+        if (roleId != null) {
+            return Long.valueOf(roleId.toString());
+        }
+        return null;
+    }
     // 提取 token 中的某些信息
     public <T> T extractClaim(String token, ClaimsResolver<T> claimsResolver) {
         Claims claims = extractAllClaims(token);

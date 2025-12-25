@@ -13,14 +13,14 @@ public interface UserMapper {
     User findByPhoneNumber(String phoneNumber);
 
     // 插入用户
-    @Insert("INSERT INTO users(nick_name,phone_number, password) VALUES(#{nickName},#{phoneNumber}, #{password})")
+    @Insert("INSERT INTO users(phone_number, password, nick_name, role_id) " +
+            "VALUES(#{phoneNumber}, #{password}, #{nickName}, #{roleId})")
     void insertUser(User user);
-    // 🔍 查名册：关联查询，顺便把角色名也带出来（虽然前端可以用 ID 判断，但带上名字更稳）
-    @Select("SELECT u.*, r.role_name as roleName FROM users u " +
-            "LEFT JOIN roles r ON u.role_id = r.id")
+    // 1. 拉取所有子民清单（排除掉敏感的密码，只拿关键信息）
+    @Select("SELECT id, phone_number as phoneNumber, nick_name as nickName, role_id as roleId FROM users")
     List<User> findAllUsers();
 
-    // 🛠️ 敕封/贬职：只动 role_id 这一行
+    // 2. 修改角色：这就是“封王”或“贬职”的核心动作
     @Update("UPDATE users SET role_id = #{roleId} WHERE id = #{userId}")
     void updateRole(@Param("userId") Long userId, @Param("roleId") Long roleId);
 }
