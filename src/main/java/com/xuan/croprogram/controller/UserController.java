@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +50,7 @@ public class UserController {
 
     // 用户登录
     @PostMapping("/login")
-    public ApiResponse<String> login(@RequestBody User loginReq) {
+    public ApiResponse<Map<String,Object>> login(@RequestBody User loginReq) {
         // 1. 先去库里把这个人找出来
         User dbUser = userMapper.findByPhoneNumber(loginReq.getPhoneNumber());
 
@@ -59,7 +60,10 @@ public class UserController {
 
             // 3. ✅ 成功！生成工牌 (带上 roleId)
             String token = jwtUtil.generateToken(dbUser.getPhoneNumber(), dbUser.getRoleId());
-            return new ApiResponse<>("登录成功！", token, 200);
+            Map<String, Object> loginData = new HashMap<>();
+            loginData.put("token", token);
+            loginData.put("roleId", dbUser.getRoleId());
+            return new ApiResponse<>("登录成功！", loginData, 200);
 
         } else {
             return new ApiResponse<>("账号或密码不对，兄弟你再想想？", null, 401);
@@ -69,7 +73,7 @@ public class UserController {
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')") // 🌟 这一行，顶替了之前所有的 if (roleId != 1)
     public ApiResponse<List<User>> getAllUsers() {
-        // 既然能进来，你就是国王！不需要传 Token，不需要 substring(7)
+        // 既然能进来，你就是国王！不需要传 Token，不需要 substring(7)1
 
         List<User> users = userMapper.findAllUsers();
         return new ApiResponse<>("名册在此，请国王阅览。", users, 200);

@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,8 +16,11 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
-    private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256); // 密钥，可以从配置文件中读取，确保其保密性
+    // 1. 定义一个固定的、足够长的字符串（至少32位，像你的代码一样严谨）
+    private final String SECRET_STRING = "ArchitectXuan_Secret_Key_For_Kingdom_2025_Safe";
 
+    // 2. 将它转换成 SecretKey 对象
+    private final SecretKey secretKey = Keys.hmacShaKeyFor(SECRET_STRING.getBytes(StandardCharsets.UTF_8));
     // JwtUtil.java
 
     // 之前的：public String generateToken(String phoneNumber)
