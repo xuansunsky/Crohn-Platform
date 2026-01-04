@@ -3,9 +3,11 @@ package com.xuan.croprogram.controller;
 import com.xuan.croprogram.config.JwtUtil;
 import com.xuan.croprogram.mapper.UserMapper;
 import com.xuan.croprogram.model.ApiResponse;
+import com.xuan.croprogram.model.LoginUser;
 import com.xuan.croprogram.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,7 +61,7 @@ public class UserController {
         if (dbUser != null && passwordEncoder.matches(loginReq.getPassword(), dbUser.getPassword())) {
 
             // 3. ✅ 成功！生成工牌 (带上 roleId)
-            String token = jwtUtil.generateToken(dbUser.getPhoneNumber(), dbUser.getRoleId());
+            String token = jwtUtil.generateToken(dbUser.getId(),dbUser.getPhoneNumber(), dbUser.getRoleId());
             Map<String, Object> loginData = new HashMap<>();
             loginData.put("token", token);
             loginData.put("roleId", dbUser.getRoleId());
@@ -89,6 +91,27 @@ public class UserController {
 
         userMapper.updateRole(userId, targetRoleId);
         return new ApiResponse<>("King的旨意已下达，身份已变更。", null, 200);
+    }
+
+    @GetMapping("/getRole") // 建议加个路径，显得清晰，比如 /user/getRole
+    public ApiResponse<Long> getRole(@AuthenticationPrincipal LoginUser loginUser) {
+
+        // 1. 🔒 获取当前登录用户的 ID (这是最关键的一步)
+        // 这里的 SecurityUtils.getUserId() 是你项目里封装的工具类
+        // 如果没有封装，通常是 SecurityContextHolder.getContext().getAuthentication()... 拿出来的
+        Long currentUserId = loginUser.getId();
+        System.out.println(loginUser);
+        // 2. 🔍 去数据库查验真身
+        // 如果查不到（比如用户被删了），MyBatis 可能会返回 null，这里要做好心理准备
+        Long realRoleId = userMapper.selectRoleIdByUserId(currentUserId);
+
+        // 3. 🛡️ 防御性编程：万一查出来是 null (比如数据异常)，默认给(平民)
+        if (realRoleId == null) {
+            realRoleId = 2L;
+        }
+
+        // 4. 🚀 返回给前端
+        return new ApiResponse<>("身份核验通过，当前权限已同步。", realRoleId, 200);
     }
 
 }

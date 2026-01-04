@@ -23,4 +23,10 @@ public interface UserMapper {
     // 2. 修改角色：这就是“封王”或“贬职”的核心动作
     @Update("UPDATE users SET role_id = #{roleId} WHERE id = #{userId}")
     void updateRole(@Param("userId") Long userId, @Param("roleId") Long roleId);
+
+    // 👇 2. 新增：这是我们要补的查询逻辑
+    // 专门查 role_id，不用把整个 User 对象都查出来，节省内存
+    @Select("SELECT role_id FROM users WHERE id = #{userId}")
+    Long selectRoleIdByUserId(@Param("userId") Long userId);
+
 }

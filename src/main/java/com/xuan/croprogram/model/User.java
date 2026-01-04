@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 @Data
 @Table(name = "users")  // 显式指定表名
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

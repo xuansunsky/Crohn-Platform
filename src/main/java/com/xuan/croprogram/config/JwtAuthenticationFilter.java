@@ -1,5 +1,6 @@
 package com.xuan.croprogram.config;
 
+import com.xuan.croprogram.model.LoginUser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,16 +46,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = authHeader.substring(7);
 
             // 用咱们的工具类解析出：他是谁（手机号）？他是啥职位（roleId）？
-            String username = jwtUtil.extractUsername(jwt);
+            String phoneNumber = jwtUtil.extractUsername(jwt);
             Long roleId = jwtUtil.getRoleIdFromToken(jwt);
-
+            Long id = jwtUtil.getUserIdFromToken(jwt);
             // 📝 第三关：做一张官方认可的“临时身份证”
             // 如果解析出了名字，且目前系统还没给他登记过（SecurityContext 为空）
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (phoneNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 // 验证一下工牌有没有过期，秘钥对不对
-                if (jwtUtil.validateToken(jwt, username)) {
-
+                if (jwtUtil.validateToken(jwt, phoneNumber)) {
+                    LoginUser loginUser = new LoginUser(id, phoneNumber, roleId);
                     // 🌟 这里是重点！咱们把数字 roleId 翻译成 Spring 认得的“职位等级”
                     // 1 -> ROLE_ADMIN, 2 -> ROLE_USER (必须以 ROLE_ 开头，这是 Spring 的规矩)
                     String roleName = (roleId != null && roleId == 1) ? "ROLE_ADMIN" : "ROLE_USER";
@@ -64,7 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     // 创建官方“认证令牌”：包含用户名、密码(不要了给null)、权限等级
                     UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(username, null, authorities);
+                            new UsernamePasswordAuthenticationToken(loginUser, null, authorities);
 
                     // 顺便记录一下他从哪台电脑发出的请求
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

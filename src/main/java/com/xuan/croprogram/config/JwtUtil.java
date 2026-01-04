@@ -25,8 +25,9 @@ public class JwtUtil {
 
     // 之前的：public String generateToken(String phoneNumber)
 // 升级版：
-    public String generateToken(String phoneNumber, Long roleId) {
+    public String generateToken(Long id,String phoneNumber, Long roleId) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("id", id);
         claims.put("phoneNumber", phoneNumber);
         claims.put("roleId", roleId); // ✅ 把职位刻在工牌上
 
@@ -38,6 +39,7 @@ public class JwtUtil {
                 .signWith(SignatureAlgorithm.HS256, secretKey) // 你的秘钥
                 .compact();
     }
+
 
     // 提取用户名（或其他信息）从 JWT Token
     public String extractUsername(String token) {
@@ -51,6 +53,21 @@ public class JwtUtil {
                 .build()
                 .parseClaimsJws(token)  // 解析 token
                 .getBody();
+    }
+    // 在 JwtUtil 类中增加
+    public Long getUserIdFromToken(String token) {
+        // 1. 拿到所有信息
+        Claims claims = extractAllClaims(token);
+
+        // 2. 从 claims 中取出 id (当初 generateToken 存的时候 key 是 "id")
+        Object id = claims.get("id");
+
+        // 3. 转成 Long 返回
+        if (id != null) {
+            // 这里的 toString() 再 Long.valueOf 是最稳的，防止 Json 解析时的类型转换坑
+            return Long.valueOf(id.toString());
+        }
+        return null;
     }
     // 在 JwtUtil 类中增加这个方法
     public Long getRoleIdFromToken(String token) {
