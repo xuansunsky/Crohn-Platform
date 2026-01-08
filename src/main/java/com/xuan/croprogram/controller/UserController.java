@@ -42,7 +42,12 @@ public class UserController {
 
         // 3. 初始身份：默认都是 2 (平民 USER)
         user.setRoleId(2L);
-
+// 如果没有上传头像，就给他随机生成一个
+        if (user.getAvatar() == null || user.getAvatar().isEmpty()) {
+            // 使用 DiceBear API，根据用户名生成唯一头像
+            String randomAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=" + user.getNickName();
+            user.setAvatar(randomAvatar);
+        }
         // 4. 写入名册
         userMapper.insertUser(user);
 

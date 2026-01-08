@@ -36,7 +36,9 @@ public class User {
     // 生日（可选）
     @Column(name = "birthday")
     private LocalDate birthday;
-
+    //头像
+    @Column(name = "avatar")
+    private String avatar;
     // 城市
     @Column(name = "city", length = 50)
     private String city;

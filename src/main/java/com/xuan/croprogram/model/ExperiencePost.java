@@ -5,7 +5,6 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@Entity
 @Table(name = "experience_posts")
 public class ExperiencePost {
 
