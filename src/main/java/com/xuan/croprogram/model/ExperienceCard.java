@@ -1,8 +1,8 @@
 package com.xuan.croprogram.model;
 
+import jakarta.persistence.*;
 import lombok.Data;
 import java.util.Date;
-import javax.persistence.*; // 如果是 JPA
 // import com.baomidou.mybatisplus.annotation.*; // 如果是 MyBatis-Plus
 
 @Data

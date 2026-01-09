@@ -1,5 +1,6 @@
 package com.xuan.croprogram.model;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -10,4 +11,5 @@ public class LoginUser {
     private Long id;
     private String phoneNumber;
     private Long roleId;
+
 }
