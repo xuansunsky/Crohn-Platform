@@ -70,6 +70,7 @@ public class UserController {
             Map<String, Object> loginData = new HashMap<>();
             loginData.put("token", token);
             loginData.put("roleId", dbUser.getRoleId());
+            loginData.put("userId", dbUser.getId());
             return new ApiResponse<>("登录成功！", loginData, 200);
 
         } else {

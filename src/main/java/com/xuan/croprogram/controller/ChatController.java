@@ -7,9 +7,9 @@ import com.xuan.croprogram.model.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-
+// 🔥 1. 引入刚才写的 WebSocketServer
+import com.xuan.croprogram.controller.WebSocketServer;
 @RestController
 @RequestMapping("/api/chat")
 public class ChatController {
@@ -33,10 +33,10 @@ public class ChatController {
         if (message.getType() == null) {
             message.setType("text");
         }
-
         // 入库
         messageMapper.insert(message);
-
+        // 简单版推送：直接把内容发过去
+        WebSocketServer.sendInfo(message.getReceiverId(), message.getContent());
         return new ApiResponse<>("发送成功", null, 200);
     }
 
