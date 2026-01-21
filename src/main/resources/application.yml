@@ -1,20 +1,12 @@
 spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/croprogram_db  # 确保这个 URL 是正确的
-    username: root
-    password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver  # 确保这个驱动类名是正确的
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
-      idle-timeout: 30000
-      max-lifetime: 60000
-      connection-timeout: 30000
+  profiles:
+    active: dev  # 默认在本地跑，激活 dev 环境
+  application:
+    name: croprogram-backend # 你的应用名
   jpa:
     hibernate:
       ddl-auto: update
       show-sql: true
-      open-in-view: false
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
