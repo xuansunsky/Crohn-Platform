@@ -6,7 +6,6 @@ import java.util.Date;
 // import com.baomidou.mybatisplus.annotation.*; // 如果是 MyBatis-Plus
 
 @Data
-@Entity // JPA注解
 @Table(name = "experience_card") // 对应数据库表名
 public class ExperienceCard {
 

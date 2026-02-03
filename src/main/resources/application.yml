@@ -4,9 +4,11 @@ spring:
   application:
     name: croprogram-backend # 你的应用名
   jpa:
-    hibernate:
-      ddl-auto: update
-      show-sql: true
+      hibernate:
+        ddl-auto: update
+        show-sql: true
+        database-platform: org.hibernate.dialect.MySQLDialect
+
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
