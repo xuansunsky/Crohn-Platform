@@ -4,7 +4,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -25,11 +24,12 @@ public class JwtUtil {
 
     // 之前的：public String generateToken(String phoneNumber)
 // 升级版：
-    public String generateToken(Long id,String phoneNumber, Long roleId) {
+    public String generateToken(Long id, String phoneNumber, Long roleId, String nickname) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", id);
         claims.put("phoneNumber", phoneNumber);
-        claims.put("roleId", roleId); // ✅ 把职位刻在工牌上
+        claims.put("roleId", roleId);
+        claims.put("nickname", nickname);
 
         return Jwts.builder()
                 .setClaims(claims) // 把这些信息都塞进去

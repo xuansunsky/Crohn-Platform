@@ -15,7 +15,7 @@ public class Policy {
     private String cityName;
     private String policyType;
     private String updateTime;
-    private String contributor;
+    private String nickname;
 
     private Boolean mente;
     private Boolean dualChannel;
@@ -37,6 +37,16 @@ public class Policy {
     // (如果你用的原生MyBatis，这个注解不用加，只要Mapper里不写它就行)
     @TableField(exist = false)
     private List<DrugItem> drugs;
+    // ✨ 新增字段
+    private Long userId;        // 谁传的
+    private Integer auditStatus;// 0待审, 1已审
+    private Integer likes;      // 点赞
+
+    private String evidenceImgs;
+
+    // 📸 证据图片 (前端收发 List)
+    @TableField(exist = false)
+    private List<String> evidenceList;
 
     // 内部类：药物结构
     @Data

@@ -45,7 +45,7 @@ public class UserController {
 // 如果没有上传头像，就给他随机生成一个
         if (user.getAvatar() == null || user.getAvatar().isEmpty()) {
             // 使用 DiceBear API，根据用户名生成唯一头像
-            String randomAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=" + user.getNickName();
+            String randomAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=" + user.getNickname();
             user.setAvatar(randomAvatar);
         }
         // 4. 写入名册
@@ -66,11 +66,13 @@ public class UserController {
         if (dbUser != null && passwordEncoder.matches(loginReq.getPassword(), dbUser.getPassword())) {
 
             // 3. ✅ 成功！生成工牌 (带上 roleId)
-            String token = jwtUtil.generateToken(dbUser.getId(),dbUser.getPhoneNumber(), dbUser.getRoleId());
+            String token = jwtUtil.generateToken(dbUser.getId(),dbUser.getPhoneNumber(), dbUser.getRoleId(),dbUser.getNickname());
             Map<String, Object> loginData = new HashMap<>();
             loginData.put("token", token);
             loginData.put("roleId", dbUser.getRoleId());
             loginData.put("userId", dbUser.getId());
+
+
 
             return new ApiResponse<>("登录成功！！", loginData, 200);
 

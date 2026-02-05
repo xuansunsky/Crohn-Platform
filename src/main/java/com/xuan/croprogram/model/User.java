@@ -22,8 +22,8 @@ public class User {
     private String password;
 
     // 昵称
-    @Column(name = "nick_name", nullable = false, length = 50)
-    private String nickName;
+    @Column(name = "nickname", nullable = false, length = 50)
+    private String nickname;
 
     // 性别：0未知 1男 2女
     @Column(name = "gender")

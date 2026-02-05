@@ -24,7 +24,7 @@ public interface FriendshipMapper {
     // 逻辑：只要状态是 ACCEPTED，且我是其中一方，就把对方的信息查出来
     @Select("SELECT " +
             "  u.id as friendId, " +
-            "  u.nick_name, " +
+            "  u.nickname, " +
             "  u.avatar, " +
             "  f.id as friendshipId, " +
             "  f.status " +
@@ -37,7 +37,7 @@ public interface FriendshipMapper {
     // 4. 【信箱】查谁申请加我 (Pending 状态)
     @Select("SELECT " +
             "  u.id as friendId, " +
-            "  u.nick_name, " +
+            "  u.nickname, " +
             "  u.avatar, " +
             "  f.id as friendshipId, " +
             "  f.status " +
