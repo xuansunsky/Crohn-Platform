@@ -1,16 +1,18 @@
 package com.xuan.croprogram.model;
 
-import jakarta.persistence.*;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import java.util.Date;
 // import com.baomidou.mybatisplus.annotation.*; // 如果是 MyBatis-Plus
 
 @Data
-@Table(name = "experience_card") // 对应数据库表名
+@TableName("experience_card") // 对应数据库表名
 public class ExperienceCard {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -44,9 +46,7 @@ public class ExperienceCard {
      * 创建时间
      * 前端那个 2025.12.23 就用这个时间自动格式化
      */
-    @Column(name = "create_time")
     private Date createTime;
 
-    @Column(name = "update_time")
     private Date updateTime;
 }

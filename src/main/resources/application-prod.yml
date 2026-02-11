@@ -1,7 +1,7 @@
 spring:
   datasource:
     # 服务器数据库连接 (注意：这里 localhost 指的是服务器自己的本地，不用改 IP)
-    url: jdbc:mysql://localhost:3306/croprogram_db?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:3306/croprogram_db?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     # 下面这两个从你的宝塔截图里填进去！
     username: croprogram_db
     password: root

@@ -18,7 +18,7 @@ public interface PolicyMapper {
     // 2. 【抽屉列表】查该城市的所有历史版本
     // 逻辑和你定的一样：核验优先 -> 点赞优先 -> 时间优先
     @Select("SELECT id, nickname, update_time, audit_status, likes, " +
-            "deductible, nominal_ratio, evidence_imgs, user_id " + // 只查列表需要的字段
+            "deductible, dual_ratio, evidence_imgs, user_id " + // 只查列表需要的字段
             "FROM t_policy " +
             "WHERE city_name = #{city} AND policy_type = #{type} " +
             "ORDER BY audit_status DESC, likes DESC, update_time DESC")

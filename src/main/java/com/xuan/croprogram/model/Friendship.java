@@ -1,14 +1,13 @@
 package com.xuan.croprogram.model;
 
-import jakarta.persistence.*;
+
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@Table(name = "friendships")
 public class Friendship {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     // 申请人ID

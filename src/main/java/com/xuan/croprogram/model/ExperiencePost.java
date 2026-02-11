@@ -1,19 +1,17 @@
 package com.xuan.croprogram.model;
 
-import jakarta.persistence.*;
+
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@Table(name = "experience_posts")
 public class ExperiencePost {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     // 关联的用户ID
-    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     // 这里的 updatable = false 意味着：
@@ -30,10 +28,8 @@ public class ExperiencePost {
 
     private String tags; // 存 "标签1,标签2"
 
-    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
