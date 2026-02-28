@@ -1,6 +1,7 @@
 spring:
   profiles:
     active: dev  # 默认在本地跑，激活 dev 环境
+    include: secret  # 启动时，把 application-secret.yml 里的配置吸进去
   application:
     name: croprogram-backend # 你的应用名
   jpa:
