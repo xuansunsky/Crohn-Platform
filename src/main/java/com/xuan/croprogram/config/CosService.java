@@ -25,7 +25,7 @@ public class CosService {
     // 我已经根据你的截图帮你配好了！
     private static final String REGION_NAME = "ap-chengdu";
     private static final String BUCKET_NAME = "xiaoxuan-1395427682";
-1
+
     /**
      * 上传图片并返回访问链接
      */
