@@ -15,6 +15,7 @@ public class DietReport {
     private Date createTime;
     private Integer isDeleted;
     private String brand;     // 接前端的 formData.brand
-    private String product;   // 接前端的 formData.product
+    private String product;
+    private String coverImg;// 接前端的 formData.product
     private Integer level;
 }

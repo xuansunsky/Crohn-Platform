@@ -38,6 +38,7 @@ public class DietController {
         // (⚠️ 前提：你的 DietReport 实体类里已经加上了 brand, product, level 这三个假字段！)
         String brandName = requestReport.getBrand();
         String foodName = requestReport.getProduct();
+        String cover_img = requestReport.getCoverImg();
 
         // 防呆拦截：万一前端传空了，直接打回
         if (brandName == null || foodName == null || brandName.trim().isEmpty()) {
@@ -51,6 +52,7 @@ public class DietController {
             food = new Food();
             food.setBrandName(brandName);
             food.setFoodName(foodName);
+            food.setCoverImg(cover_img);
             foodMapper.insert(food);
             // 👆 因为加了 @Options，执行完这句，food.getId() 就有值了！
         }
