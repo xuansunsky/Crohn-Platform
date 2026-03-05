@@ -7,6 +7,7 @@ import com.qcloud.cos.auth.COSCredentials;
 import com.qcloud.cos.model.ObjectMetadata;
 import com.qcloud.cos.model.PutObjectRequest;
 import com.qcloud.cos.region.Region;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,8 +20,11 @@ public class CosService {
     // 🚨 核心机密：去腾讯云控制台的 "访问管理(CAM)" -> "API密钥管理" 里获取！
     // 千万不要发给我，也不要提交到公共的 Github！
     // 坚决不上传真实秘钥！
-    private static final String SECRET_ID = "YourSecretIdHere";
-    private static final String SECRET_KEY = "YourSecretKeyHere";
+    @Value("${tencent.cos.secret-id}")
+    private String SECRET_ID;
+
+    @Value("${tencent.cos.secret-key}")
+    private String SECRET_KEY;
 
     // 我已经根据你的截图帮你配好了！
     private static final String REGION_NAME = "ap-chengdu";
