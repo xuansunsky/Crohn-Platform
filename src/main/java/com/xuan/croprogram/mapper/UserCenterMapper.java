@@ -27,15 +27,19 @@ public interface UserCenterMapper {
     })
     void updateBasicInfo(UserHealthProfile profile);
 
-    @Insert("INSERT INTO user_health_profile " +
-            "(user_id, health_phase, phase_start_date, diet_strategy, bowel_status) " +
-            "VALUES " +
-            "(#{userId}, #{healthPhase}, #{phaseStartDate}, #{dietStrategy}, #{bowelStatus}) " +
-            "ON DUPLICATE KEY UPDATE " +
-            "health_phase = VALUES(health_phase), " +
-            "phase_start_date = VALUES(phase_start_date), " +
-            "diet_strategy = VALUES(diet_strategy), " +
-            "bowel_status = VALUES(bowel_status)")
+    @Update({
+            "<script>",
+            "INSERT INTO user_health_profile ",
+            "(user_id, health_phase, phase_start_date, diet_strategy, bowel_status) ",
+            "VALUES ",
+            "(#{userId}, #{healthPhase}, #{phaseStartDate}, #{dietStrategy}, #{bowelStatus}) ",
+            "ON DUPLICATE KEY UPDATE ",
+            "  <if test='healthPhase != null'> health_phase = VALUES(health_phase), </if>",
+            "  <if test='phaseStartDate != null'> phase_start_date = VALUES(phase_start_date), </if>",
+            "  <if test='dietStrategy != null'> diet_strategy = VALUES(diet_strategy), </if>",
+            "  <if test='bowelStatus != null'> bowel_status = VALUES(bowel_status) </if>",
+            "</script>"
+    })
     void saveOrUpdateHealthProfile(UserHealthProfile profile);
 }
 

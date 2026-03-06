@@ -3,8 +3,10 @@ package com.xuan.croprogram.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xuan.croprogram.mapper.PolicyMapper;
+import com.xuan.croprogram.model.LoginUser;
 import com.xuan.croprogram.model.Policy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
@@ -120,24 +122,23 @@ public class PolicyController {
     }
     // ✅ 2. 提交/保存接口 (POST)
     @PostMapping("/save")
-    public Map<String, Object> save(@RequestBody Policy policy) {
+    public Map<String, Object> save(@RequestBody Policy policy, @AuthenticationPrincipal LoginUser loginUser) {
         Map<String, Object> result = new HashMap<>();
         try {
-            // 2.1 处理药品 (List -> String)
+            // 1. 强行绑定当前登录人 ID，防止前端伪造
+            Long currentUserId = loginUser.getId();
+            policy.setUserId(currentUserId);
+
+            // 2. 处理 JSON 转换
             if (policy.getDrugs() != null) {
-                String jsonStr = objectMapper.writeValueAsString(policy.getDrugs());
-                policy.setDrugsJson(jsonStr);
+                policy.setDrugsJson(objectMapper.writeValueAsString(policy.getDrugs()));
             }
-
-            // 🔥 2.2 处理证据图片 (List -> String)
-            // 注意：这里全是小写开头！getEvidenceList -> setEvidenceImgs
             if (policy.getEvidenceList() != null && !policy.getEvidenceList().isEmpty()) {
-                String evidenceJson = objectMapper.writeValueAsString(policy.getEvidenceList());
-                policy.setEvidenceImgs(evidenceJson);
+                policy.setEvidenceImgs(objectMapper.writeValueAsString(policy.getEvidenceList()));
             }
 
-            // 判断是新增还是更新
-            int count = policyMapper.count(policy.getCityName(), policy.getPolicyType());
+            // 3. 判断是更新“我的版本”还是新增一个版本
+            int count = policyMapper.count(policy.getCityName(), policy.getPolicyType(), currentUserId);
             if (count > 0) {
                 policyMapper.update(policy);
             } else {
@@ -149,7 +150,7 @@ public class PolicyController {
         } catch (Exception e) {
             e.printStackTrace();
             result.put("code", 500);
-            result.put("msg", "保存失败: " + e.getMessage());
+            result.put("msg", "保存失败");
         }
         return result;
     }

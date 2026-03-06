@@ -18,8 +18,6 @@ import java.util.UUID;
 public class CosService {
 
     // 🚨 核心机密：去腾讯云控制台的 "访问管理(CAM)" -> "API密钥管理" 里获取！
-    // 千万不要发给我，也不要提交到公共的 Github！
-    // 坚决不上传真实秘钥！
     @Value("${tencent.cos.secret-id}")
     private String SECRET_ID;
 
