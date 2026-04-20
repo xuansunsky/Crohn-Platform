@@ -23,26 +23,26 @@ public interface FriendshipMapper {
     // 3. 🔥【取货】查我的好友列表 (返回 DTO 大礼包)
     // 逻辑：只要状态是 ACCEPTED，且我是其中一方，就把对方的信息查出来
     @Select("SELECT " +
-            "  u.id as friendId, " +
+            "  u.user_id as friendId, " +
             "  u.nickname, " +
             "  u.avatar, " +
             "  f.id as friendshipId, " +
             "  f.status " +
             "FROM friendships f " +
-            "JOIN users u ON (CASE WHEN f.requester_id = #{myId} THEN f.addressee_id ELSE f.requester_id END = u.id) " +
+            "JOIN users u ON (CASE WHEN f.requester_id = #{myId} THEN f.addressee_id ELSE f.requester_id END = u.user_id) " +
             "WHERE (f.requester_id = #{myId} OR f.addressee_id = #{myId}) " +
             "AND f.status = 'ACCEPTED'")
     List<FriendDto> findMyFriends(Long myId);
 
     // 4. 【信箱】查谁申请加我 (Pending 状态)
     @Select("SELECT " +
-            "  u.id as friendId, " +
+            "  u.user_id as friendId, " +
             "  u.nickname, " +
             "  u.avatar, " +
             "  f.id as friendshipId, " +
             "  f.status " +
             "FROM friendships f " +
-            "JOIN users u ON f.requester_id = u.id " +
+            "JOIN users u ON f.requester_id = u.user_id " +
             "WHERE f.addressee_id = #{myId} AND f.status = 'PENDING'")
     List<FriendDto> findPendingRequests(Long myId);
 

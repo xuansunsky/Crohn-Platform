@@ -48,14 +48,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 用咱们的工具类解析出：他是谁（手机号）？他是啥职位（roleId）？
             String phoneNumber = jwtUtil.extractUsername(jwt);
             Long roleId = jwtUtil.getRoleIdFromToken(jwt);
-            Long id = jwtUtil.getUserIdFromToken(jwt);
+            Long userId = jwtUtil.getUserIdFromToken(jwt);
             // 📝 第三关：做一张官方认可的“临时身份证”
             // 如果解析出了名字，且目前系统还没给他登记过（SecurityContext 为空）
             if (phoneNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 // 验证一下工牌有没有过期，秘钥对不对
                 if (jwtUtil.validateToken(jwt, phoneNumber)) {
-                    LoginUser loginUser = new LoginUser(id, phoneNumber, roleId);
+                    LoginUser loginUser = new LoginUser(userId, phoneNumber, roleId);
                     // 🌟 这里是重点！咱们把数字 roleId 翻译成 Spring 认得的“职位等级”
                     // 1 -> ROLE_ADMIN, 2 -> ROLE_USER (必须以 ROLE_ 开头，这是 Spring 的规矩)
                     String roleName = (roleId != null && roleId == 1) ? "ROLE_ADMIN" : "ROLE_USER";

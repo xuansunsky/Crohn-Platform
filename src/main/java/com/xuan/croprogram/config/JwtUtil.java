@@ -24,9 +24,9 @@ public class JwtUtil {
 
     // 之前的：public String generateToken(String phoneNumber)
 // 升级版：
-    public String generateToken(Long id, String phoneNumber, Long roleId, String nickname) {
+    public String generateToken(Long userId, String phoneNumber, Long roleId, String nickname) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("id", id);
+        claims.put("userId", userId);
         claims.put("phoneNumber", phoneNumber);
         claims.put("roleId", roleId);
         claims.put("nickname", nickname);
@@ -59,13 +59,13 @@ public class JwtUtil {
         // 1. 拿到所有信息
         Claims claims = extractAllClaims(token);
 
-        // 2. 从 claims 中取出 id (当初 generateToken 存的时候 key 是 "id")
-        Object id = claims.get("id");
+        // 2. 从 claims 中取出 userId (当初 generateToken 存的时候 key 是 "userId")
+        Object userId = claims.get("userId");
 
         // 3. 转成 Long 返回
-        if (id != null) {
+        if (userId != null) {
             // 这里的 toString() 再 Long.valueOf 是最稳的，防止 Json 解析时的类型转换坑
-            return Long.valueOf(id.toString());
+            return Long.valueOf(userId.toString());
         }
         return null;
     }

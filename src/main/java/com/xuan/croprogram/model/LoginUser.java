@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class LoginUser {
-    private Long id;
+    private Long userId;
     private String phoneNumber;
     private Long roleId;
 

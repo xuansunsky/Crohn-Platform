@@ -126,7 +126,7 @@ public class PolicyController {
         Map<String, Object> result = new HashMap<>();
         try {
             // 1. 强行绑定当前登录人 ID，防止前端伪造
-            Long currentUserId = loginUser.getId();
+            Long currentUserId = loginUser.getUserId();
             policy.setUserId(currentUserId);
 
             // 2. 处理 JSON 转换

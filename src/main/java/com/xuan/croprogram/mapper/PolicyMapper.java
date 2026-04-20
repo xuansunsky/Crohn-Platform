@@ -10,7 +10,7 @@ public interface PolicyMapper {
     // 1. 【默认详情】连表查：保证拿到的是用户最新的头像和昵称
     @Select("SELECT p.*, u.nickname, u.avatar " +
             "FROM policy p " +
-            "LEFT JOIN users u ON p.user_id = u.id " +
+            "LEFT JOIN users u ON p.user_id = u.user_id " +
             "WHERE p.city_name = #{city} AND p.policy_type = #{type} " +
             "ORDER BY p.audit_status DESC, p.likes DESC, p.update_time DESC " +
             "LIMIT 1")
@@ -19,7 +19,7 @@ public interface PolicyMapper {
     // 2. 【抽屉列表】同样连表，修正了你之前的 audit_status 拼写错误
     @Select("SELECT p.*, u.nickname, u.avatar " +
             "FROM policy p " +
-            "LEFT JOIN users u ON p.user_id = u.id " +
+            "LEFT JOIN users u ON p.user_id = u.user_id " +
             "WHERE p.city_name = #{city} AND p.policy_type = #{type} " +
             "ORDER BY p.audit_status DESC, p.likes DESC, p.update_time DESC")
     List<Policy> selectHistoryList(@Param("city") String city, @Param("type") String type);
@@ -27,7 +27,7 @@ public interface PolicyMapper {
     // 3. 【切换版本】
     @Select("SELECT p.*, u.nickname, u.avatar " +
             "FROM policy p " +
-            "LEFT JOIN users u ON p.user_id = u.id " +
+            "LEFT JOIN users u ON p.user_id = u.user_id " +
             "WHERE p.id = #{id}")
     Policy selectById(Long id);
 

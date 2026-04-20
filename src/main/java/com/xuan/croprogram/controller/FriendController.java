@@ -32,7 +32,7 @@ public class FriendController {
             @AuthenticationPrincipal LoginUser loginUser,
             @RequestBody Friendship request // 前端传 { "addresseeId": 对方ID }
     ) {
-        Long myId = loginUser.getId();
+        Long myId = loginUser.getUserId();
         Long targetId = request.getAddresseeId(); // 注意：前端 JSON key 必须叫 addresseeId
 
         // === 第一关：不能自恋 ===
@@ -74,7 +74,7 @@ public class FriendController {
     @GetMapping("/list")
     public ApiResponse<List<FriendDto>> getFriendList(@AuthenticationPrincipal LoginUser loginUser) {
         // 调用 Mapper 那个复杂的 SQL
-        List<FriendDto> list = friendMapper.findMyFriends(loginUser.getId());
+        List<FriendDto> list = friendMapper.findMyFriends(loginUser.getUserId());
         return new ApiResponse<>("获取成功", list, 200);
     }
 
@@ -84,7 +84,7 @@ public class FriendController {
      */
     @GetMapping("/requests")
     public ApiResponse<List<FriendDto>> getPendingRequests(@AuthenticationPrincipal LoginUser loginUser) {
-        List<FriendDto> list = friendMapper.findPendingRequests(loginUser.getId());
+        List<FriendDto> list = friendMapper.findPendingRequests(loginUser.getUserId());
         return new ApiResponse<>("获取成功", list, 200);
     }
 

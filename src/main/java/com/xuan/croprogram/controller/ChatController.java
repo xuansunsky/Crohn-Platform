@@ -9,7 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 // 🔥 1. 引入刚才写的 WebSocketServer
-import com.xuan.croprogram.controller.WebSocketServer;
+
 @RestController
 @RequestMapping("/api/chat")
 public class ChatController {
@@ -27,7 +27,7 @@ public class ChatController {
             @RequestBody Message message
     ) {
         // 补全发送者 ID (就是我)
-        message.setSenderId(loginUser.getId());
+        message.setSenderId(loginUser.getUserId());
 
         // 默认类型 text
         if (message.getType() == null) {
@@ -49,7 +49,7 @@ public class ChatController {
             @AuthenticationPrincipal LoginUser loginUser,
             @RequestParam Long friendId
     ) {
-        Long myId = loginUser.getId();
+        Long myId = loginUser.getUserId();
         List<Message> history = messageMapper.findChatHistory(myId, friendId);
 
         return new ApiResponse<>("获取成功", history, 200);

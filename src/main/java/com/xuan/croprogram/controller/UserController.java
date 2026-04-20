@@ -66,11 +66,11 @@ public class UserController {
         if (dbUser != null && passwordEncoder.matches(loginReq.getPassword(), dbUser.getPassword())) {
 
             // 3. ✅ 成功！生成工牌 (带上 roleId)
-            String token = jwtUtil.generateToken(dbUser.getId(),dbUser.getPhoneNumber(), dbUser.getRoleId(),dbUser.getNickname());
+            String token = jwtUtil.generateToken(dbUser.getUserId(),dbUser.getPhoneNumber(), dbUser.getRoleId(),dbUser.getNickname());
             Map<String, Object> loginData = new HashMap<>();
             loginData.put("token", token);
             loginData.put("roleId", dbUser.getRoleId());
-            loginData.put("userId", dbUser.getId());
+            loginData.put("userId", dbUser.getUserId());
 
 
             return new ApiResponse<>("登录成功！！", loginData, 200);
@@ -108,7 +108,7 @@ public class UserController {
         // 1. 🔒 获取当前登录用户的 ID (这是最关键的一步)
         // 这里的 SecurityUtils.getUserId() 是你项目里封装的工具类
         // 如果没有封装，通常是 SecurityContextHolder.getContext().getAuthentication()... 拿出来的
-        Long currentUserId = loginUser.getId();
+        Long currentUserId = loginUser.getUserId();
         System.out.println(loginUser);
         // 2. 🔍 去数据库查验真身
         // 如果查不到（比如用户被删了），MyBatis 可能会返回 null，这里要做好心理准备

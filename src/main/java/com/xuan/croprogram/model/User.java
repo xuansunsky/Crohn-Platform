@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 public class User {
 
-    private Long id;
+    private Long userId;
 
     // 手机号
     private String phoneNumber;

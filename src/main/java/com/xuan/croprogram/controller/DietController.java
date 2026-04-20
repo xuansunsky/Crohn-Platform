@@ -32,7 +32,7 @@ public class DietController {
             @RequestBody DietReport requestReport) {      // 🌟 2. 必须有 @RequestBody 接前端JSON
 
         // 1. 获取真实的 userId
-        Long currentUserId = loginUser.getId();
+        Long currentUserId = loginUser.getUserId();
 
         // 2. 从前端传来的“假字段”里，把名字掏出来！
         // (⚠️ 前提：你的 DietReport 实体类里已经加上了 brand, product, level 这三个假字段！)

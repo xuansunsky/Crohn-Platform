@@ -31,7 +31,7 @@ public class ExperienceController {
             @RequestBody ExperiencePost post
     ) {
         // 强制绑定为当前用户的 ID
-        post.setUserId(loginUser.getId());
+        post.setUserId(loginUser.getUserId());
 
         postMapper.insert(post);
         return new ApiResponse<>("发布成功！", null, 200);
@@ -51,7 +51,7 @@ public class ExperienceController {
 
         // 🛡️ 鉴权：只有“管理员”或者“作者本人”能删
         boolean isAdmin = (loginUser.getRoleId()==1);
-        boolean isAuthor = post.getUserId().equals(loginUser.getId());
+        boolean isAuthor = post.getUserId().equals(loginUser.getUserId());
 
         if (!isAdmin && !isAuthor) {
             return new ApiResponse<>("你没有权限删除别人的勋章！", null, 403);
@@ -81,7 +81,7 @@ public class ExperienceController {
         // 你的逻辑：roleId == 1 是管理员
         boolean isAdmin = (loginUser.getRoleId() == 1);
         // 注意：数据库查出来的 userId 是 Long 类型，比较要用 equals
-        boolean isAuthor = existingPost.getUserId().equals(loginUser.getId());
+        boolean isAuthor = existingPost.getUserId().equals(loginUser.getUserId());
 
         if (!isAdmin && !isAuthor) {
             return new ApiResponse<>("你没有权限修改别人的记忆！", null, 403);
