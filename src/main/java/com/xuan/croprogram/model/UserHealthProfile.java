@@ -19,6 +19,7 @@ public class UserHealthProfile {
     // === 从 users 表 JOIN 进来的字段（不在本表存储） ===
     private String nickname;
     private String avatar;
+    private String city;
 
     // === 档案核心字段 ===
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")

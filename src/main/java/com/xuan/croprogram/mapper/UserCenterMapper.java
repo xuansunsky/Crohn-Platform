@@ -13,7 +13,7 @@ public interface UserCenterMapper {
     @Select({
             "<script>",
             "SELECT ",
-            "  u.user_id, u.nickname, u.avatar,",
+            "  u.user_id, u.nickname, u.avatar, u.city,",
             "  p.diagnosed_at, p.health_phase, p.phase_start_date,",
             "  p.diet_strategy, p.bowel_status, p.badges,",
             "  p.radar_tags, p.radar_sign",
@@ -57,9 +57,10 @@ public interface UserCenterMapper {
             "<set>",
             "  <if test='nickname != null and nickname != \"\"'> nickname = #{nickname}, </if>",
             "  <if test='avatar != null and avatar != \"\"'> avatar = #{avatar}, </if>",
+            "  <if test='city != null and city != \"\"'> city = #{city}, </if>",
             "</set>",
             "WHERE user_id = #{userId}",
-            "  AND ( #{nickname} IS NOT NULL OR #{avatar} IS NOT NULL )", // 额外的安全防线：防止生成无效SQL
+            "  AND ( #{nickname} IS NOT NULL OR #{avatar} IS NOT NULL OR #{city} IS NOT NULL )",
             "</script>"
     })
     void updateBasicInfo(UserHealthProfile profile);

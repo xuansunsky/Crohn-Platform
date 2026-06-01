@@ -5,6 +5,7 @@ import com.xuan.croprogram.mapper.UserMapper;
 import com.xuan.croprogram.model.ApiResponse;
 import com.xuan.croprogram.model.LoginUser;
 import com.xuan.croprogram.model.User;
+import com.xuan.croprogram.util.CityNormalizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -52,7 +53,7 @@ public class UserController {
         userMapper.insertUser(user);
 
         // 成功回执：提示语、返回数据(null)、状态码(200)
-        return new ApiResponse<>("欢迎加入 Kingdom！请开始你的表演。", null, 200);
+        return new ApiResponse<>("欢迎加入 Paradise！请开始你的表演。", null, 200);
     }
 
     // 用户登录
@@ -121,6 +122,40 @@ public class UserController {
 
         // 4. 🚀 返回给前端
         return new ApiResponse<>("身份核验通过，当前权限已同步。", realRoleId, 200);
+    }
+
+    // 🔍 搜索用户（按昵称或纯数字ID），用来加好友
+    @GetMapping("/search")
+    public ApiResponse<List<User>> searchUsers(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @RequestParam String keyword
+    ) {
+        Long myId = loginUser.getUserId();
+        String kw = keyword == null ? "" : keyword.trim();
+        if (kw.isEmpty()) {
+            return new ApiResponse<>("请输入昵称或ID", new java.util.ArrayList<>(), 200);
+        }
+        List<User> result;
+        if (kw.matches("\\d+")) {
+            // 纯数字：按用户ID精确查
+            result = userMapper.searchById(Long.parseLong(kw), myId);
+        } else {
+            // 否则按昵称模糊搜
+            result = userMapper.searchByNickname(kw, myId);
+        }
+        return new ApiResponse<>("搜索完成", result, 200);
+    }
+
+    // 🌆 同城用户列表
+    @GetMapping("/nearby")
+    public ApiResponse<List<User>> getNearbyUsers(@AuthenticationPrincipal LoginUser loginUser) {
+        User me = userMapper.findByPhoneNumber(loginUser.getPhoneNumber());
+        String city = me == null ? null : CityNormalizer.normalize(me.getCity());
+        if (city == null || city.isEmpty()) {
+            return new ApiResponse<>("请先在个人中心设置城市", new java.util.ArrayList<>(), 200);
+        }
+        List<User> neighbors = userMapper.findByCity(city, city + "市", me.getUserId());
+        return new ApiResponse<>("同城子民已找到", neighbors, 200);
     }
 
 }

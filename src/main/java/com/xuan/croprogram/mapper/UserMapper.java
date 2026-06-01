@@ -29,4 +29,27 @@ public interface UserMapper {
     @Select("SELECT role_id FROM users WHERE user_id = #{userId}")
     Long selectRoleIdByUserId(@Param("userId") Long userId);
 
+    // 同城用户列表（排除自己）
+    @Select("SELECT user_id as userId, nickname, avatar, city FROM users " +
+            "WHERE user_id != #{userId} AND is_active = 1 " +
+            "AND (city = #{city} OR city = #{cityWithSuffix} OR city LIKE CONCAT('%', #{city}, '市%')) " +
+            "LIMIT 20")
+    List<User> findByCity(@Param("city") String city, @Param("cityWithSuffix") String cityWithSuffix, @Param("userId") Long userId);
+
+    // 按昵称模糊搜索（排除自己）
+    @Select("SELECT user_id as userId, nickname, avatar, city FROM users " +
+            "WHERE user_id != #{userId} AND is_active = 1 " +
+            "AND nickname LIKE CONCAT('%', #{keyword}, '%') " +
+            "LIMIT 20")
+    List<User> searchByNickname(@Param("keyword") String keyword, @Param("userId") Long userId);
+
+    // 按用户ID精确查（排除自己）
+    @Select("SELECT user_id as userId, nickname, avatar, city FROM users " +
+            "WHERE user_id = #{targetId} AND user_id != #{userId} AND is_active = 1")
+    List<User> searchById(@Param("targetId") Long targetId, @Param("userId") Long userId);
+
+    // 按 userId 查单个用户（含昵称头像）
+    @Select("SELECT user_id as userId, nickname, avatar FROM users WHERE user_id = #{userId}")
+    User findByUserId(@Param("userId") Long userId);
+
 }

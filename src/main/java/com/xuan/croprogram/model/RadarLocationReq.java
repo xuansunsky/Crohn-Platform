@@ -6,5 +6,7 @@ import lombok.Data;
 public class RadarLocationReq {
     private Double longitude;
     private Double latitude;
+    private String city;
+    private Long id;
 
 }

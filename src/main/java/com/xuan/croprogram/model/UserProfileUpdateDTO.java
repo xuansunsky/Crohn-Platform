@@ -9,6 +9,7 @@ public class UserProfileUpdateDTO {
     // === 1. users 表的基础信息 ===
     private String nickname;
     private String avatar;
+    private String city;
 
     // === 2. user_health_profile 表的业务信息 ===
 

@@ -8,13 +8,15 @@ import java.util.List;
 @Mapper
 public interface ExperiencePostMapper {
 
-    // 1. 查所有帖子 (倒序，最新的在前面)
-    @Select("SELECT * FROM experience_posts ORDER BY created_at DESC")
+    // 1. 查所有帖子 (倒序，最新的在前面，连表带出作者昵称头像)
+    @Select("SELECT p.*, u.nickname AS authorName, u.avatar AS authorAvatar " +
+            "FROM experience_posts p LEFT JOIN users u ON p.user_id = u.user_id " +
+            "ORDER BY p.created_at DESC")
     List<ExperiencePost> findAll();
 
     // 2. 新增帖子
-    @Insert("INSERT INTO experience_posts(user_id, title, summary, icon, theme, tags, created_at) " +
-            "VALUES(#{userId}, #{title}, #{summary}, #{icon}, #{theme}, #{tags}, #{createdAt})")
+    @Insert("INSERT INTO experience_posts(user_id, title, summary, icon, theme, tags, cover_image, created_at) " +
+            "VALUES(#{userId}, #{title}, #{summary}, #{icon}, #{theme}, #{tags}, #{coverImage}, NOW())")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void insert(ExperiencePost post);
 

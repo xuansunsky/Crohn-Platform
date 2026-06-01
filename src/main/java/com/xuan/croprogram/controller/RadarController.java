@@ -8,6 +8,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 @RestController
 @RequestMapping("/api/radar")
 public class RadarController {
@@ -21,6 +24,9 @@ public class RadarController {
     // Redis 里存放雷达坐标的专属 Key
     private static final String RADAR_KEY = "crohn:radar:users";
 
+    // 记录用户最近一次定位，方便前端调试/回显
+    private static final Map<Long, RadarLocationReq> LOCATION_STORE = new ConcurrentHashMap<>();
+
     /**
      * 1. 开启雷达 (上报位置)
      * 前端传参: { "longitude": 105.05, "latitude": 29.58 }
@@ -28,16 +34,18 @@ public class RadarController {
     @PostMapping("/join")
     public ApiResponse<String> joinRadar(
             @AuthenticationPrincipal LoginUser loginUser,
-            @RequestBody RadarLocationReq req // 见下方注释
+            @RequestBody RadarLocationReq req
     ) {
-        String myId = loginUser.getUserId().toString(); // Redis 里存 String 最好
+        String myId = loginUser.getUserId().toString();
 
-        // 核心魔法：把经纬度和用户ID塞进 Redis 的地理位置池子里
         redisTemplate.opsForGeo().add(
                 RADAR_KEY,
                 new Point(req.getLongitude(), req.getLatitude()),
                 myId
         );
+
+        req.setId(loginUser.getUserId());
+        LOCATION_STORE.put(loginUser.getUserId(), req);
 
         return new ApiResponse<>("已进入同城雷达池，坐标已锁定", null, 200);
     }
@@ -49,10 +57,30 @@ public class RadarController {
     public ApiResponse<String> leaveRadar(@AuthenticationPrincipal LoginUser loginUser) {
         String myId = loginUser.getUserId().toString();
 
-        // 核心魔法：把这个用户从池子里踢出去，保护隐私
         redisTemplate.opsForGeo().remove(RADAR_KEY, myId);
+        LOCATION_STORE.remove(loginUser.getUserId());
 
         return new ApiResponse<>("雷达已关闭，坐标已彻底销毁", null, 200);
+    }
+
+    @PostMapping("/location")
+    public ApiResponse<String> saveLocation(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @RequestBody RadarLocationReq req
+    ) {
+        req.setId(loginUser.getUserId());
+        LOCATION_STORE.put(loginUser.getUserId(), req);
+        return new ApiResponse<>("定位已保存", null, 200);
+    }
+
+    @GetMapping("/location")
+    public ApiResponse<RadarLocationReq> getLocation(@AuthenticationPrincipal LoginUser loginUser) {
+        RadarLocationReq req = LOCATION_STORE.get(loginUser.getUserId());
+        if (req == null) {
+            req = new RadarLocationReq();
+            req.setId(loginUser.getUserId());
+        }
+        return new ApiResponse<>("定位获取成功", req, 200);
     }
 
     /**

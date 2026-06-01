@@ -28,7 +28,16 @@ public class ExperiencePost {
 
     private String tags; // 存 "标签1,标签2"
 
+    // 故事配图（可空）
+    private String coverImage;
+
     private LocalDateTime createdAt;
+
+    // 连表查出的作者信息（不入库）
+    @TableField(exist = false)
+    private String authorName;
+    @TableField(exist = false)
+    private String authorAvatar;
 
     protected void onCreate() {
         createdAt = LocalDateTime.now();

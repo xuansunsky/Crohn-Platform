@@ -4,6 +4,7 @@ import com.xuan.croprogram.mapper.UserCenterMapper;
 import com.xuan.croprogram.model.ApiResponse;
 import com.xuan.croprogram.model.LoginUser;
 import com.xuan.croprogram.model.UserHealthProfile;
+import com.xuan.croprogram.util.CityNormalizer;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -51,6 +52,7 @@ public class UserCenterController {
     ) {
         // 1. 强行绑定当前用户，防止越权
         profile.setUserId(loginUser.getUserId());
+        profile.setCity(CityNormalizer.normalize(profile.getCity()));
 
         // 2. 扔给动态 Mapper，它会自动判断哪些字段有值并拼接 SQL
         userCenterMapper.updateBasicInfo(profile);
