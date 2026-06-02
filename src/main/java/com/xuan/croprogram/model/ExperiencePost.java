@@ -31,6 +31,9 @@ public class ExperiencePost {
     // 故事配图（可空）
     private String coverImage;
 
+    // 正文图集/视频（JSON 数组字符串，最多 9 条，可空）
+    private String media;
+
     private LocalDateTime createdAt;
 
     // 连表查出的作者信息（不入库）

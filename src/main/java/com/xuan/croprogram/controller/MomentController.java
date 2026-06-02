@@ -20,8 +20,9 @@ public class MomentController {
 
     @GetMapping("/list")
     public ApiResponse<List<Moment>> list(@AuthenticationPrincipal LoginUser loginUser) {
-        List<Moment> moments = momentMapper.findAll();
         Long userId = loginUser.getUserId();
+        int viewerVerified = momentMapper.isVerified(userId);
+        List<Moment> moments = momentMapper.findVisible(userId, viewerVerified);
         moments.forEach(m -> {
             m.setLiked(momentMapper.checkLiked(m.getId(), userId) > 0);
             m.setComments(momentMapper.findCommentsByMoment(m.getId()));

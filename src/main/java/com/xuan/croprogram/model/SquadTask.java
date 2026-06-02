@@ -17,5 +17,5 @@ public class SquadTask {
     private String ownerName;
     private String assigneeName;
 }
- assigneeName;
-}
+
+

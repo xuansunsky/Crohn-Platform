@@ -12,6 +12,7 @@ public class Moment {
     private String imagesJson;
     private String device;
     private String location;
+    private String visibility; // public(公开) / comrade(仅战友) / private(仅自己)
     private Integer likesCount;
     private LocalDateTime createdAt;
     // from JOIN with users

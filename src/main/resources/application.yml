@@ -4,6 +4,10 @@ spring:
     include: secret  # 启动时，把 application-secret.yml 里的配置吸进去
   application:
     name: croprogram-backend # 你的应用名
+  servlet:
+    multipart:
+      max-file-size: 100MB      # 单个文件上限（支持视频）
+      max-request-size: 300MB   # 单次请求总上限（一次传多条）
   jpa:
       hibernate:
         ddl-auto: update

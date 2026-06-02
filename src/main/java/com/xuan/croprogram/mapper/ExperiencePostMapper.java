@@ -15,8 +15,8 @@ public interface ExperiencePostMapper {
     List<ExperiencePost> findAll();
 
     // 2. 新增帖子
-    @Insert("INSERT INTO experience_posts(user_id, title, summary, icon, theme, tags, cover_image, created_at) " +
-            "VALUES(#{userId}, #{title}, #{summary}, #{icon}, #{theme}, #{tags}, #{coverImage}, NOW())")
+    @Insert("INSERT INTO experience_posts(user_id, title, summary, icon, theme, tags, cover_image, media, created_at) " +
+            "VALUES(#{userId}, #{title}, #{summary}, #{icon}, #{theme}, #{tags}, #{coverImage}, #{media}, NOW())")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void insert(ExperiencePost post);
 
@@ -27,6 +27,12 @@ public interface ExperiencePostMapper {
     // 4. 查单个帖子 (为了删除前鉴权，看看是不是本人写的)
     @Select("SELECT * FROM experience_posts WHERE id = #{id}")
     ExperiencePost findById(Long id);
+
+    // 5. 查单个帖子详情（连表带作者昵称头像，用于详情页）
+    @Select("SELECT p.*, u.nickname AS authorName, u.avatar AS authorAvatar " +
+            "FROM experience_posts p LEFT JOIN users u ON p.user_id = u.user_id " +
+            "WHERE p.id = #{id}")
+    ExperiencePost findDetailById(Long id);
 
     @Update("UPDATE experience_posts SET " +
             "title = #{title}, " +

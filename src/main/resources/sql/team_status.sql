@@ -48,3 +48,9 @@ CREATE TABLE IF NOT EXISTS `crohn_user_verification` (
 
 -- 5. 经验金库封面图列（若 experience_posts 已存在则补列）
 ALTER TABLE `experience_posts` ADD COLUMN `cover_image` VARCHAR(512) DEFAULT NULL COMMENT '故事配图链接';
+
+-- 6. 经验金库正文图集/视频列（JSON 数组字符串，最多 9 条）
+ALTER TABLE `experience_posts` ADD COLUMN `media` TEXT DEFAULT NULL COMMENT '正文图集/视频 JSON 数组（最多9条）';
+
+-- 7. 动态可见范围（public 公开 / comrade 仅战友 / private 仅自己）
+ALTER TABLE `moments` ADD COLUMN `visibility` VARCHAR(16) DEFAULT 'public' COMMENT '可见范围：public/comrade/private';

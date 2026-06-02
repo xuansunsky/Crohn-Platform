@@ -24,6 +24,16 @@ public class ExperienceController {
         return new ApiResponse<>("获取成功", postMapper.findAll(), 200);
     }
 
+    // 1.1 获取单篇详情（带作者信息）
+    @GetMapping("/detail/{id}")
+    public ApiResponse<ExperiencePost> getDetail(@PathVariable Long id) {
+        ExperiencePost post = postMapper.findDetailById(id);
+        if (post == null) {
+            return new ApiResponse<>("文章不存在或已被删除", null, 404);
+        }
+        return new ApiResponse<>("获取成功", post, 200);
+    }
+
     // 2. 发布新卡片
     @PostMapping("/publish")
     public ApiResponse<String> publishPost(
