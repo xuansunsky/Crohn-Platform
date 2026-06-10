@@ -12,7 +12,12 @@ public interface FriendshipMapper {
     @Select("SELECT * FROM friendships WHERE " +
             "(requester_id = #{uid1} AND addressee_id = #{uid2}) OR " +
             "(requester_id = #{uid2} AND addressee_id = #{uid1}) LIMIT 1")
-    Friendship findRelation(Long uid1, Long uid2);
+    Friendship findRelation(@Param("uid1") Long uid1, @Param("uid2") Long uid2);
+
+    @Select("SELECT COUNT(*) FROM friendships WHERE status = 'ACCEPTED' AND (" +
+            "(requester_id = #{uid1} AND addressee_id = #{uid2}) OR " +
+            "(requester_id = #{uid2} AND addressee_id = #{uid1}))")
+    int countAcceptedRelation(@Param("uid1") Long uid1, @Param("uid2") Long uid2);
 
     // 2. 【下单】插入一条新的好友申请
     @Insert("INSERT INTO friendships(requester_id, addressee_id, status, created_at) " +
@@ -27,12 +32,29 @@ public interface FriendshipMapper {
             "  u.nickname, " +
             "  u.avatar, " +
             "  f.id as friendshipId, " +
-            "  f.status " +
+            "  f.status, " +
+            "  (SELECT CASE WHEN m.type = 'image' THEN '[图片]' ELSE m.content END " +
+            "   FROM messages m " +
+            "   WHERE (m.sender_id = #{myId} AND m.receiver_id = u.user_id) " +
+            "      OR (m.sender_id = u.user_id AND m.receiver_id = #{myId}) " +
+            "   ORDER BY m.created_at DESC LIMIT 1) AS lastMsg, " +
+            "  (SELECT DATE_FORMAT(m.created_at, '%m-%d %H:%i') " +
+            "   FROM messages m " +
+            "   WHERE (m.sender_id = #{myId} AND m.receiver_id = u.user_id) " +
+            "      OR (m.sender_id = u.user_id AND m.receiver_id = #{myId}) " +
+            "   ORDER BY m.created_at DESC LIMIT 1) AS lastTime, " +
+            "  (SELECT COUNT(*) FROM messages m " +
+            "   WHERE m.sender_id = u.user_id AND m.receiver_id = #{myId} AND m.is_read = 0) AS unread " +
             "FROM friendships f " +
             "JOIN users u ON (CASE WHEN f.requester_id = #{myId} THEN f.addressee_id ELSE f.requester_id END = u.user_id) " +
             "WHERE (f.requester_id = #{myId} OR f.addressee_id = #{myId}) " +
-            "AND f.status = 'ACCEPTED'")
-    List<FriendDto> findMyFriends(Long myId);
+            "AND f.status = 'ACCEPTED' " +
+            "ORDER BY COALESCE((" +
+            "  SELECT MAX(m.created_at) FROM messages m " +
+            "  WHERE (m.sender_id = #{myId} AND m.receiver_id = u.user_id) " +
+            "     OR (m.sender_id = u.user_id AND m.receiver_id = #{myId})" +
+            "), f.updated_at, f.created_at) DESC")
+    List<FriendDto> findMyFriends(@Param("myId") Long myId);
 
     // 4. 【信箱】查谁申请加我 (Pending 状态)
     @Select("SELECT " +

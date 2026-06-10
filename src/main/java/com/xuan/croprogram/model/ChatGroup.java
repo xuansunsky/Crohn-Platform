@@ -13,4 +13,7 @@ public class ChatGroup {
     private LocalDateTime createdAt;
     // 列表展示用：成员数（非表字段）
     private Integer memberCount;
+    // 列表展示用：最近一条消息（非表字段）
+    private String lastMsg;
+    private String lastTime;
 }

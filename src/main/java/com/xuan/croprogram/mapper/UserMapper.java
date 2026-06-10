@@ -36,17 +36,39 @@ public interface UserMapper {
             "LIMIT 20")
     List<User> findByCity(@Param("city") String city, @Param("cityWithSuffix") String cityWithSuffix, @Param("userId") Long userId);
 
-    // 按昵称模糊搜索（排除自己）
-    @Select("SELECT user_id as userId, nickname, avatar, city FROM users " +
-            "WHERE user_id != #{userId} AND is_active = 1 " +
-            "AND nickname LIKE CONCAT('%', #{keyword}, '%') " +
-            "LIMIT 20")
-    List<User> searchByNickname(@Param("keyword") String keyword, @Param("userId") Long userId);
-
-    // 按用户ID精确查（排除自己）
-    @Select("SELECT user_id as userId, nickname, avatar, city FROM users " +
-            "WHERE user_id = #{targetId} AND user_id != #{userId} AND is_active = 1")
-    List<User> searchById(@Param("targetId") Long targetId, @Param("userId") Long userId);
+    // 搜索用户：精确 ID 优先，昵称始终支持模糊搜索（排除自己）
+    @Select({
+            "<script>",
+            "SELECT user_id as userId, nickname, avatar, city FROM users",
+            "WHERE user_id != #{userId}",
+            "AND COALESCE(is_active, 1) = 1",
+            "AND (",
+            "  LOWER(COALESCE(nickname, '')) LIKE CONCAT('%', LOWER(#{keyword}), '%')",
+            "  <if test='targetId != null'> OR user_id = #{targetId} </if>",
+            ")",
+            "ORDER BY",
+            "  <choose>",
+            "    <when test='targetId != null'>",
+            "      CASE",
+            "        WHEN user_id = #{targetId} THEN 0",
+            "        WHEN nickname = #{keyword} THEN 1",
+            "        WHEN LOWER(COALESCE(nickname, '')) LIKE CONCAT(LOWER(#{keyword}), '%') THEN 2",
+            "        ELSE 3",
+            "      END",
+            "    </when>",
+            "    <otherwise>",
+            "      CASE",
+            "        WHEN nickname = #{keyword} THEN 0",
+            "        WHEN LOWER(COALESCE(nickname, '')) LIKE CONCAT(LOWER(#{keyword}), '%') THEN 1",
+            "        ELSE 2",
+            "      END",
+            "    </otherwise>",
+            "  </choose>,",
+            "  user_id DESC",
+            "LIMIT 20",
+            "</script>"
+    })
+    List<User> searchUsers(@Param("keyword") String keyword, @Param("targetId") Long targetId, @Param("userId") Long userId);
 
     // 按 userId 查单个用户（含昵称头像）
     @Select("SELECT user_id as userId, nickname, avatar FROM users WHERE user_id = #{userId}")

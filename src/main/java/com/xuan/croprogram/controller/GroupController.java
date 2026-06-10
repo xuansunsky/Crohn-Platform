@@ -86,10 +86,65 @@ public class GroupController {
     }
 
     /**
+     * 群详情
+     */
+    @GetMapping("/{id}")
+    public ApiResponse<Map<String, Object>> detail(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @PathVariable Long id
+    ) {
+        Long myId = loginUser.getUserId();
+        if (groupMapper.isMember(id, myId) == 0) {
+            return new ApiResponse<>("你不在这个小队里", null, 403);
+        }
+        ChatGroup group = groupMapper.findById(id);
+        Map<String, Object> data = new HashMap<>();
+        data.put("group", group);
+        data.put("myRole", groupMapper.findMemberRole(id, myId));
+        return new ApiResponse<>("获取成功", data, 200);
+    }
+
+    /**
+     * 更新群资料：{ name, avatar, notice }
+     */
+    @PostMapping("/{id}/profile")
+    public ApiResponse<ChatGroup> updateProfile(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @PathVariable Long id,
+            @RequestBody ChatGroup req
+    ) {
+        Long myId = loginUser.getUserId();
+        ChatGroup existing = groupMapper.findById(id);
+        if (existing == null) {
+            return new ApiResponse<>("小队不存在", null, 404);
+        }
+        if (!existing.getOwnerId().equals(myId)) {
+            return new ApiResponse<>("只有队长可以修改小队资料", null, 403);
+        }
+
+        String name = req.getName() == null ? "" : req.getName().trim();
+        if (name.isEmpty()) {
+            return new ApiResponse<>("小队名称不能为空", null, 400);
+        }
+
+        existing.setName(name);
+        existing.setAvatar(req.getAvatar() == null || req.getAvatar().trim().isEmpty() ? existing.getAvatar() : req.getAvatar().trim());
+        existing.setNotice(req.getNotice() == null ? "" : req.getNotice().trim());
+        groupMapper.updateGroup(existing);
+        return new ApiResponse<>("小队资料已更新", groupMapper.findById(id), 200);
+    }
+
+    /**
      * 群成员列表
      */
     @GetMapping("/{id}/members")
-    public ApiResponse<List<GroupMember>> members(@PathVariable Long id) {
+    public ApiResponse<List<GroupMember>> members(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @PathVariable Long id
+    ) {
+        if (groupMapper.isMember(id, loginUser.getUserId()) == 0) {
+            return new ApiResponse<>("你不在这个小队里", null, 403);
+        }
         return new ApiResponse<>("获取成功", groupMapper.findMembers(id), 200);
     }
 
@@ -113,6 +168,61 @@ public class GroupController {
             }
         }
         return new ApiResponse<>("已邀请加入", null, 200);
+    }
+
+    /**
+     * 移除成员（队长权限）
+     */
+    @PostMapping("/{id}/remove")
+    public ApiResponse<String> removeMember(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> req
+    ) {
+        Long myId = loginUser.getUserId();
+        ChatGroup group = groupMapper.findById(id);
+        if (group == null) {
+            return new ApiResponse<>("小队不存在", null, 404);
+        }
+        if (!group.getOwnerId().equals(myId)) {
+            return new ApiResponse<>("只有队长可以移除成员", null, 403);
+        }
+        Object memberIdObj = req.get("memberId");
+        if (memberIdObj == null) {
+            return new ApiResponse<>("成员ID不能为空", null, 400);
+        }
+        Long memberId = Long.parseLong(memberIdObj.toString());
+        if (memberId.equals(myId)) {
+            return new ApiResponse<>("队长不能移除自己，可以先转让队长后退出", null, 400);
+        }
+        groupMapper.deleteMember(id, memberId);
+        return new ApiResponse<>("已移出小队", null, 200);
+    }
+
+    /**
+     * 退出群聊
+     */
+    @PostMapping("/{id}/leave")
+    public ApiResponse<String> leave(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @PathVariable Long id
+    ) {
+        Long myId = loginUser.getUserId();
+        ChatGroup group = groupMapper.findById(id);
+        if (group == null) {
+            return new ApiResponse<>("小队不存在", null, 404);
+        }
+        if (groupMapper.isMember(id, myId) == 0) {
+            return new ApiResponse<>("你不在这个小队里", null, 403);
+        }
+        if (group.getOwnerId().equals(myId) && groupMapper.countMembers(id) > 1) {
+            return new ApiResponse<>("队长暂不能直接退出，请先移交队长或解散小队", null, 400);
+        }
+        groupMapper.deleteMember(id, myId);
+        if (groupMapper.countMembers(id) == 0) {
+            groupMapper.deleteGroup(id);
+        }
+        return new ApiResponse<>("已退出小队", null, 200);
     }
 
     /**

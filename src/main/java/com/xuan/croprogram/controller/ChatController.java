@@ -2,6 +2,7 @@ package com.xuan.croprogram.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xuan.croprogram.mapper.FriendshipMapper;
+import com.xuan.croprogram.mapper.GroupMessageMapper;
 import com.xuan.croprogram.mapper.MessageMapper;
 import com.xuan.croprogram.mapper.UserMapper;
 import com.xuan.croprogram.model.ApiResponse;
@@ -12,6 +13,7 @@ import com.xuan.croprogram.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,9 @@ public class ChatController {
 
     @Autowired
     private MessageMapper messageMapper;
+
+    @Autowired
+    private GroupMessageMapper groupMessageMapper;
 
     @Autowired
     private FriendshipMapper friendshipMapper;
@@ -125,7 +130,31 @@ public class ChatController {
     ) {
         Long myId = loginUser.getUserId();
         List<Message> history = messageMapper.findChatHistory(myId, friendId);
+        messageMapper.markAsRead(myId, friendId);
 
         return new ApiResponse<>("获取成功", history, 200);
+    }
+
+    @GetMapping("/search")
+    public ApiResponse<List<Map<String, Object>>> searchMessages(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @RequestParam String keyword
+    ) {
+        Long myId = loginUser.getUserId();
+        String kw = keyword == null ? "" : keyword.trim();
+        if (kw.isEmpty()) {
+            return new ApiResponse<>("请输入搜索内容", new ArrayList<>(), 200);
+        }
+        if (kw.length() > 50) {
+            kw = kw.substring(0, 50);
+        }
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        result.addAll(messageMapper.searchConversationMatches(myId, kw));
+        result.addAll(groupMessageMapper.searchConversationMatches(myId, kw));
+        result.sort((a, b) -> String.valueOf(b.get("matchedAt")).compareTo(String.valueOf(a.get("matchedAt"))));
+        result.forEach(item -> item.remove("matchedAt"));
+
+        return new ApiResponse<>("搜索完成", result, 200);
     }
 }

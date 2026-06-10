@@ -37,12 +37,49 @@ public interface HealMapper {
     int checkComforted(@Param("signalId") Long signalId, @Param("comforterId") Long comforterId);
 
     // --- 情绪解压纸船 ---
-    @Insert("INSERT INTO crohn_paper_boat(content, breeze_count, created_at) VALUES(#{content}, 0, NOW())")
+    @Insert("INSERT INTO crohn_paper_boat(user_id, content, breeze_count, created_at) VALUES(#{userId}, #{content}, 0, NOW())")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void insertPaperBoat(PaperBoat boat);
 
-    @Select("SELECT * FROM crohn_paper_boat ORDER BY RAND() LIMIT 1")
-    PaperBoat findRandomPaperBoat();
+    @Select("""
+            SELECT
+              b.*,
+              (SELECT COUNT(*) FROM crohn_paper_boat_response r WHERE r.boat_id = b.id AND r.response_type = 'reply') AS reply_count,
+              (SELECT COUNT(*) FROM crohn_paper_boat_response r WHERE r.boat_id = b.id AND r.response_type = 'gift') AS gift_count,
+              EXISTS(SELECT 1 FROM crohn_paper_boat_breeze br WHERE br.boat_id = b.id AND br.user_id = #{userId}) AS breezed,
+              EXISTS(SELECT 1 FROM crohn_paper_boat_response r WHERE r.boat_id = b.id AND r.user_id = #{userId} AND r.response_type = 'reply') AS replied,
+              EXISTS(SELECT 1 FROM crohn_paper_boat_response r WHERE r.boat_id = b.id AND r.user_id = #{userId} AND r.response_type = 'gift') AS gifted
+            FROM crohn_paper_boat b
+            WHERE (b.user_id IS NULL OR b.user_id != #{userId})
+              AND NOT EXISTS (
+                SELECT 1 FROM crohn_paper_boat_scoop s
+                WHERE s.boat_id = b.id AND s.user_id = #{userId}
+              )
+            ORDER BY RAND()
+            LIMIT 1
+            """)
+    PaperBoat findRandomPaperBoat(@Param("userId") Long userId);
+
+    @Select("SELECT COUNT(*) FROM crohn_paper_boat WHERE user_id = #{userId} AND DATE(created_at) = CURDATE()")
+    int countPaperBoatReleasedToday(Long userId);
+
+    @Select("SELECT COUNT(*) FROM crohn_paper_boat_scoop WHERE user_id = #{userId} AND DATE(created_at) = CURDATE()")
+    int countPaperBoatScoopedToday(Long userId);
+
+    @Insert("INSERT INTO crohn_paper_boat_scoop(boat_id, user_id, created_at) VALUES(#{boatId}, #{userId}, NOW())")
+    void insertPaperBoatScoop(@Param("boatId") Long boatId, @Param("userId") Long userId);
+
+    @Insert("""
+            INSERT IGNORE INTO crohn_paper_boat_response(boat_id, user_id, response_type, content, gift_type, created_at)
+            VALUES(#{boatId}, #{userId}, #{responseType}, #{content}, #{giftType}, NOW())
+            """)
+    int insertPaperBoatResponse(
+            @Param("boatId") Long boatId,
+            @Param("userId") Long userId,
+            @Param("responseType") String responseType,
+            @Param("content") String content,
+            @Param("giftType") String giftType
+    );
 
     @Insert("INSERT IGNORE INTO crohn_paper_boat_breeze(boat_id, user_id, created_at) VALUES(#{boatId}, #{userId}, NOW())")
     int insertBreeze(@Param("boatId") Long boatId, @Param("userId") Long userId);

@@ -44,7 +44,18 @@ public class CosService {
             InputStream inputStream = file.getInputStream();
             // 获取原文件名并提取后缀 (比如 .jpg, .png)
             String originalFilename = file.getOriginalFilename();
-            String extension = originalFilename != null ? originalFilename.substring(originalFilename.lastIndexOf(".")) : ".jpg";
+            String extension = ".jpg";
+            if (originalFilename != null && originalFilename.lastIndexOf(".") >= 0) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            } else if ("image/png".equals(file.getContentType())) {
+                extension = ".png";
+            } else if ("image/webp".equals(file.getContentType())) {
+                extension = ".webp";
+            } else if ("image/gif".equals(file.getContentType())) {
+                extension = ".gif";
+            } else if ("image/heic".equals(file.getContentType()) || "image/heif".equals(file.getContentType())) {
+                extension = ".heic";
+            }
 
             // 重新生成一个不重复的文件名，存放在 images/ 目录下
             String key = "images/" + UUID.randomUUID().toString().replaceAll("-", "") + extension;

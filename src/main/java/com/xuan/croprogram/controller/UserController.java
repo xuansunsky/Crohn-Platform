@@ -135,15 +135,26 @@ public class UserController {
         if (kw.isEmpty()) {
             return new ApiResponse<>("请输入昵称或ID", new java.util.ArrayList<>(), 200);
         }
-        List<User> result;
-        if (kw.matches("\\d+")) {
-            // 纯数字：按用户ID精确查
-            result = userMapper.searchById(Long.parseLong(kw), myId);
-        } else {
-            // 否则按昵称模糊搜
-            result = userMapper.searchByNickname(kw, myId);
-        }
+        List<User> result = userMapper.searchUsers(kw, parseSearchTargetId(kw), myId);
         return new ApiResponse<>("搜索完成", result, 200);
+    }
+
+    private Long parseSearchTargetId(String keyword) {
+        String normalized = keyword == null ? "" : keyword.trim().replace('：', ':');
+        String idText = null;
+        if (normalized.matches("\\d+")) {
+            idText = normalized;
+        } else if (normalized.matches("(?i)^id\\s*[:#-]?\\s*\\d+$")) {
+            idText = normalized.replaceAll("\\D+", "");
+        }
+        if (idText == null || idText.isEmpty()) {
+            return null;
+        }
+        try {
+            return Long.parseLong(idText);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     // 🌆 同城用户列表

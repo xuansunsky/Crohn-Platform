@@ -27,6 +27,17 @@ public interface MomentMapper {
             "ORDER BY m.created_at DESC")
     List<Moment> findVisible(@Param("viewerId") Long viewerId, @Param("viewerVerified") int viewerVerified);
 
+    @Select("SELECT m.*, u.nickname, u.avatar FROM moments m " +
+            "LEFT JOIN users u ON m.user_id = u.user_id " +
+            "WHERE m.user_id = #{targetId} " +
+            "AND (m.user_id = #{viewerId} " +
+            "     OR COALESCE(m.visibility, 'public') = 'public' " +
+            "     OR (COALESCE(m.visibility, 'public') = 'comrade' AND #{canSeeComrade} = 1)) " +
+            "ORDER BY m.created_at DESC")
+    List<Moment> findUserVisible(@Param("viewerId") Long viewerId,
+                                 @Param("targetId") Long targetId,
+                                 @Param("canSeeComrade") int canSeeComrade);
+
     @Select("SELECT COUNT(*) FROM crohn_user_verification v WHERE v.user_id = #{userId} AND v.status = 'APPROVED'")
     int isVerified(@Param("userId") Long userId);
 

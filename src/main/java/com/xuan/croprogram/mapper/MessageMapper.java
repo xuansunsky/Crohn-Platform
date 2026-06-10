@@ -4,8 +4,11 @@ import com.xuan.croprogram.model.Message;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface MessageMapper {
@@ -22,9 +25,30 @@ public interface MessageMapper {
             "(sender_id = #{myId} AND receiver_id = #{friendId}) OR " +
             "(sender_id = #{friendId} AND receiver_id = #{myId}) " +
             "ORDER BY created_at ASC")
-    List<Message> findChatHistory(Long myId, Long friendId);
+    List<Message> findChatHistory(@Param("myId") Long myId, @Param("friendId") Long friendId);
 
 
-    // @Update("UPDATE messages SET is_read = 1 WHERE sender_id = #{friendId} AND receiver_id = #{myId}")
-    // void markAsRead(Long myId, Long friendId);
+    @Update("UPDATE messages SET is_read = 1 WHERE sender_id = #{friendId} AND receiver_id = #{myId}")
+    void markAsRead(@Param("myId") Long myId, @Param("friendId") Long friendId);
+
+    @Select("SELECT 'single' AS type, " +
+            "IF(m.sender_id = #{myId}, m.receiver_id, m.sender_id) AS id, " +
+            "u.nickname AS name, " +
+            "u.avatar AS avatar, " +
+            "m.content AS lastMsg, " +
+            "DATE_FORMAT(m.created_at, '%m-%d %H:%i') AS lastTime, " +
+            "m.created_at AS matchedAt " +
+            "FROM messages m " +
+            "JOIN ( " +
+            "  SELECT MAX(id) AS id " +
+            "  FROM messages " +
+            "  WHERE (sender_id = #{myId} OR receiver_id = #{myId}) " +
+            "    AND LOWER(COALESCE(type, 'text')) != 'image' " +
+            "    AND content LIKE CONCAT('%', #{keyword}, '%') " +
+            "  GROUP BY IF(sender_id = #{myId}, receiver_id, sender_id) " +
+            ") hit ON hit.id = m.id " +
+            "JOIN users u ON u.user_id = IF(m.sender_id = #{myId}, m.receiver_id, m.sender_id) " +
+            "ORDER BY m.created_at DESC " +
+            "LIMIT 30")
+    List<Map<String, Object>> searchConversationMatches(@Param("myId") Long myId, @Param("keyword") String keyword);
 }

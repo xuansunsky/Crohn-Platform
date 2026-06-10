@@ -1,6 +1,8 @@
 package com.xuan.croprogram.controller;
 
 import com.xuan.croprogram.mapper.MomentMapper;
+import com.xuan.croprogram.mapper.FriendshipMapper;
+import com.xuan.croprogram.mapper.GroupMapper;
 import com.xuan.croprogram.model.ApiResponse;
 import com.xuan.croprogram.model.LoginUser;
 import com.xuan.croprogram.model.Moment;
@@ -18,6 +20,12 @@ public class MomentController {
     @Autowired
     private MomentMapper momentMapper;
 
+    @Autowired
+    private FriendshipMapper friendshipMapper;
+
+    @Autowired
+    private GroupMapper groupMapper;
+
     @GetMapping("/list")
     public ApiResponse<List<Moment>> list(@AuthenticationPrincipal LoginUser loginUser) {
         Long userId = loginUser.getUserId();
@@ -25,6 +33,26 @@ public class MomentController {
         List<Moment> moments = momentMapper.findVisible(userId, viewerVerified);
         moments.forEach(m -> {
             m.setLiked(momentMapper.checkLiked(m.getId(), userId) > 0);
+            m.setComments(momentMapper.findCommentsByMoment(m.getId()));
+        });
+        return new ApiResponse<>("获取成功", moments, 200);
+    }
+
+    @GetMapping("/user/{targetId}")
+    public ApiResponse<List<Moment>> userMoments(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @PathVariable Long targetId
+    ) {
+        Long viewerId = loginUser.getUserId();
+        boolean isSelf = viewerId.equals(targetId);
+        boolean isFriend = friendshipMapper.countAcceptedRelation(viewerId, targetId) > 0;
+        boolean isSameGroup = groupMapper.countSharedGroups(viewerId, targetId) > 0;
+        boolean isVerified = momentMapper.isVerified(viewerId) > 0;
+        int canSeeComrade = (isSelf || isFriend || isSameGroup || isVerified) ? 1 : 0;
+
+        List<Moment> moments = momentMapper.findUserVisible(viewerId, targetId, canSeeComrade);
+        moments.forEach(m -> {
+            m.setLiked(momentMapper.checkLiked(m.getId(), viewerId) > 0);
             m.setComments(momentMapper.findCommentsByMoment(m.getId()));
         });
         return new ApiResponse<>("获取成功", moments, 200);
