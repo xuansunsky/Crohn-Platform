@@ -16,7 +16,7 @@ public interface UserCenterMapper {
             "  u.user_id, u.nickname, u.avatar, u.city,",
             "  p.diagnosed_at, p.health_phase, p.phase_start_date,",
             "  p.diet_strategy, p.bowel_status, p.badges,",
-            "  p.radar_tags, p.radar_sign",
+            "  p.radar_tags, p.radar_sign, COALESCE(p.discovery_enabled, 1) as discoveryEnabled",
             "FROM users u",
             "LEFT JOIN user_health_profile p ON u.user_id = p.user_id",
             "WHERE u.user_id = #{userId}",
@@ -64,6 +64,20 @@ public interface UserCenterMapper {
             "</script>"
     })
     void updateBasicInfo(UserHealthProfile profile);
+
+    @Update({
+            "<script>",
+            "INSERT INTO user_health_profile ",
+            "(user_id, radar_tags, radar_sign, discovery_enabled) ",
+            "VALUES ",
+            "(#{userId}, #{radarTags}, #{radarSign}, COALESCE(#{discoveryEnabled}, 1)) ",
+            "ON DUPLICATE KEY UPDATE ",
+            "  radar_tags = VALUES(radar_tags),",
+            "  radar_sign = VALUES(radar_sign),",
+            "  discovery_enabled = VALUES(discovery_enabled)",
+            "</script>"
+    })
+    void saveDiscoverySettings(UserHealthProfile profile);
 
     @Update({
             "<script>",

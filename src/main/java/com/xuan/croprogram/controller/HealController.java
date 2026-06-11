@@ -148,6 +148,17 @@ public class HealController {
         return new ApiResponse<>("获取成功", buildPaperBoatQuota(loginUser.getUserId()), 200);
     }
 
+    @GetMapping("/paperboat/history")
+    public ApiResponse<Map<String, Object>> getPaperBoatHistory(@AuthenticationPrincipal LoginUser loginUser) {
+        Long userId = loginUser.getUserId();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("released", healMapper.findMyReleasedPaperBoats(userId));
+        data.put("scooped", healMapper.findMyScoopedPaperBoats(userId));
+        data.put("quota", buildPaperBoatQuota(userId));
+        return new ApiResponse<>("河流记录已展开", data, 200);
+    }
+
     @PostMapping("/paperboat/respond")
     public ApiResponse<String> respondPaperBoat(@AuthenticationPrincipal LoginUser loginUser, @RequestBody Map<String, Object> req) {
         Object boatIdRaw = req.get("boatId");

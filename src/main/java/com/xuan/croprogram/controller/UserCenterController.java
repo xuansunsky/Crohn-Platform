@@ -59,6 +59,17 @@ public class UserCenterController {
 
         return new ApiResponse<>("资料更新成功", null, 200);
     }
+
+    @PostMapping("/discovery")
+    public ApiResponse<String> updateDiscoverySettings(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @RequestBody UserHealthProfile profile
+    ) {
+        profile.setUserId(loginUser.getUserId());
+        userCenterMapper.saveDiscoverySettings(profile);
+        return new ApiResponse<>("遇见设置已保存", null, 200);
+    }
+
     /**
      * 1. 批量装备徽章 (全息舱点击保存后调用)
      * 前端传参示例: { "badges": "[\"克罗恩 V1 认证\", \"全栈架构师\"]" }

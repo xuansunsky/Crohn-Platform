@@ -33,6 +33,15 @@ public class User {
     // 城市
     private String city;
 
+    // 是否允许出现在同城/远方推荐
+    private Boolean discoveryEnabled;
+
+    // 推荐名片标签 JSON
+    private String radarTags;
+
+    // 推荐名片介绍
+    private String radarSign;
+
     // 角色：USER / ADMIN
     private Long roleId;
 

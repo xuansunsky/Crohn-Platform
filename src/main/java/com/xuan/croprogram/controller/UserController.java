@@ -5,6 +5,7 @@ import com.xuan.croprogram.mapper.UserMapper;
 import com.xuan.croprogram.model.ApiResponse;
 import com.xuan.croprogram.model.LoginUser;
 import com.xuan.croprogram.model.User;
+import com.xuan.croprogram.util.AvatarPool;
 import com.xuan.croprogram.util.CityNormalizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -44,10 +45,8 @@ public class UserController {
         // 3. 初始身份：默认都是 2 (平民 USER)
         user.setRoleId(2L);
 // 如果没有上传头像，就给他随机生成一个
-        if (user.getAvatar() == null || user.getAvatar().isEmpty()) {
-            // 使用 DiceBear API，根据用户名生成唯一头像
-            String randomAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=" + user.getNickname();
-            user.setAvatar(randomAvatar);
+        if (user.getAvatar() == null || user.getAvatar().trim().isEmpty()) {
+            user.setAvatar(AvatarPool.pick(user.getPhoneNumber() + "-" + user.getNickname()));
         }
         // 4. 写入名册
         userMapper.insertUser(user);
@@ -157,7 +156,7 @@ public class UserController {
         }
     }
 
-    // 🌆 同城用户列表
+    // 🌆 同城精选列表
     @GetMapping("/nearby")
     public ApiResponse<List<User>> getNearbyUsers(@AuthenticationPrincipal LoginUser loginUser) {
         User me = userMapper.findByPhoneNumber(loginUser.getPhoneNumber());
@@ -166,7 +165,18 @@ public class UserController {
             return new ApiResponse<>("请先在个人中心设置城市", new java.util.ArrayList<>(), 200);
         }
         List<User> neighbors = userMapper.findByCity(city, city + "市", me.getUserId());
-        return new ApiResponse<>("同城子民已找到", neighbors, 200);
+        return new ApiResponse<>("同城精选已准备好", neighbors, 200);
+    }
+
+    // 🌿 远方朋友列表
+    @GetMapping("/distant")
+    public ApiResponse<List<User>> getDistantUsers(@AuthenticationPrincipal LoginUser loginUser) {
+        User me = userMapper.findByPhoneNumber(loginUser.getPhoneNumber());
+        Long myId = me == null ? loginUser.getUserId() : me.getUserId();
+        String city = me == null ? null : CityNormalizer.normalize(me.getCity());
+        String cityWithSuffix = (city == null || city.isEmpty()) ? "" : city + "市";
+        List<User> distantFriends = userMapper.findDistantPicks(city, cityWithSuffix, myId);
+        return new ApiResponse<>("远方朋友已准备好", distantFriends, 200);
     }
 
 }

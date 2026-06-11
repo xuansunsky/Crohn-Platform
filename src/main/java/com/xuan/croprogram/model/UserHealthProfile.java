@@ -40,6 +40,7 @@ public class UserHealthProfile {
     // 雷达相关
     private String radarTags;
     private String radarSign;
+    private Boolean discoveryEnabled;
 
     // === 纯业务计算字段（只出不进） ===
 

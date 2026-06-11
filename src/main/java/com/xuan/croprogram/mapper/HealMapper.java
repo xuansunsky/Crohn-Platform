@@ -66,6 +66,38 @@ public interface HealMapper {
     @Select("SELECT COUNT(*) FROM crohn_paper_boat_scoop WHERE user_id = #{userId} AND DATE(created_at) = CURDATE()")
     int countPaperBoatScoopedToday(Long userId);
 
+    @Select("""
+            SELECT
+              b.*,
+              (SELECT COUNT(*) FROM crohn_paper_boat_response r WHERE r.boat_id = b.id AND r.response_type = 'reply') AS reply_count,
+              (SELECT COUNT(*) FROM crohn_paper_boat_response r WHERE r.boat_id = b.id AND r.response_type = 'gift') AS gift_count,
+              EXISTS(SELECT 1 FROM crohn_paper_boat_breeze br WHERE br.boat_id = b.id AND br.user_id = #{userId}) AS breezed
+            FROM crohn_paper_boat b
+            WHERE b.user_id = #{userId}
+            ORDER BY b.created_at DESC
+            LIMIT 50
+            """)
+    List<PaperBoat> findMyReleasedPaperBoats(@Param("userId") Long userId);
+
+    @Select("""
+            SELECT
+              b.*,
+              s.created_at AS scooped_at,
+              (SELECT COUNT(*) FROM crohn_paper_boat_response r WHERE r.boat_id = b.id AND r.response_type = 'reply') AS reply_count,
+              (SELECT COUNT(*) FROM crohn_paper_boat_response r WHERE r.boat_id = b.id AND r.response_type = 'gift') AS gift_count,
+              EXISTS(SELECT 1 FROM crohn_paper_boat_breeze br WHERE br.boat_id = b.id AND br.user_id = #{userId}) AS breezed,
+              EXISTS(SELECT 1 FROM crohn_paper_boat_response r WHERE r.boat_id = b.id AND r.user_id = #{userId} AND r.response_type = 'reply') AS replied,
+              EXISTS(SELECT 1 FROM crohn_paper_boat_response r WHERE r.boat_id = b.id AND r.user_id = #{userId} AND r.response_type = 'gift') AS gifted,
+              (SELECT r.content FROM crohn_paper_boat_response r WHERE r.boat_id = b.id AND r.user_id = #{userId} AND r.response_type = 'reply' ORDER BY r.created_at DESC LIMIT 1) AS reply_content,
+              (SELECT r.gift_type FROM crohn_paper_boat_response r WHERE r.boat_id = b.id AND r.user_id = #{userId} AND r.response_type = 'gift' ORDER BY r.created_at DESC LIMIT 1) AS gift_type
+            FROM crohn_paper_boat_scoop s
+            JOIN crohn_paper_boat b ON b.id = s.boat_id
+            WHERE s.user_id = #{userId}
+            ORDER BY s.created_at DESC
+            LIMIT 50
+            """)
+    List<PaperBoat> findMyScoopedPaperBoats(@Param("userId") Long userId);
+
     @Insert("INSERT INTO crohn_paper_boat_scoop(boat_id, user_id, created_at) VALUES(#{boatId}, #{userId}, NOW())")
     void insertPaperBoatScoop(@Param("boatId") Long boatId, @Param("userId") Long userId);
 

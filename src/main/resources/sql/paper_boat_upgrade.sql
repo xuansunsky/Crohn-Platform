@@ -25,3 +25,14 @@ CREATE TABLE IF NOT EXISTS `crohn_paper_boat_response` (
   KEY `idx_response_boat` (`boat_id`),
   KEY `idx_response_user_day` (`user_id`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='纸船私密回应与礼物';
+
+CREATE TABLE IF NOT EXISTS `crohn_paper_boat_breeze` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `boat_id` BIGINT NOT NULL,
+  `user_id` BIGINT NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_boat_user_breeze` (`boat_id`, `user_id`),
+  KEY `idx_breeze_user_day` (`user_id`, `created_at`),
+  KEY `idx_breeze_boat` (`boat_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='纸船微风记录';

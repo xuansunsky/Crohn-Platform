@@ -47,10 +47,10 @@ public class MomentController {
         boolean isSelf = viewerId.equals(targetId);
         boolean isFriend = friendshipMapper.countAcceptedRelation(viewerId, targetId) > 0;
         boolean isSameGroup = groupMapper.countSharedGroups(viewerId, targetId) > 0;
-        boolean isVerified = momentMapper.isVerified(viewerId) > 0;
-        int canSeeComrade = (isSelf || isFriend || isSameGroup || isVerified) ? 1 : 0;
+        int canSeeFriend = (isSelf || isFriend) ? 1 : 0;
+        int canSeeGroup = (!isSelf && !isFriend && isSameGroup) ? 1 : 0;
 
-        List<Moment> moments = momentMapper.findUserVisible(viewerId, targetId, canSeeComrade);
+        List<Moment> moments = momentMapper.findUserVisible(viewerId, targetId, canSeeFriend, canSeeGroup);
         moments.forEach(m -> {
             m.setLiked(momentMapper.checkLiked(m.getId(), viewerId) > 0);
             m.setComments(momentMapper.findCommentsByMoment(m.getId()));

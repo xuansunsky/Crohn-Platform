@@ -12,6 +12,9 @@ public class PaperBoat {
     private Integer replyCount;
     private Integer giftCount;
     private LocalDateTime createdAt;
+    private LocalDateTime scoopedAt;
+    private String replyContent;
+    private String giftType;
     
     // 辅助字段
     private String time = "刚刚";

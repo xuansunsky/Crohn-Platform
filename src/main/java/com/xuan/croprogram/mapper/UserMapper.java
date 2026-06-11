@@ -29,12 +29,38 @@ public interface UserMapper {
     @Select("SELECT role_id FROM users WHERE user_id = #{userId}")
     Long selectRoleIdByUserId(@Param("userId") Long userId);
 
-    // 同城用户列表（排除自己）
-    @Select("SELECT user_id as userId, nickname, avatar, city FROM users " +
-            "WHERE user_id != #{userId} AND is_active = 1 " +
-            "AND (city = #{city} OR city = #{cityWithSuffix} OR city LIKE CONCAT('%', #{city}, '市%')) " +
-            "LIMIT 20")
+    // 同城精选列表（排除自己）
+    @Select("SELECT u.user_id as userId, u.nickname, u.avatar, u.city, " +
+            "p.radar_tags as radarTags, p.radar_sign as radarSign, COALESCE(p.discovery_enabled, 1) as discoveryEnabled " +
+            "FROM users u LEFT JOIN user_health_profile p ON u.user_id = p.user_id " +
+            "WHERE u.user_id != #{userId} AND COALESCE(u.is_active, 1) = 1 " +
+            "AND COALESCE(p.discovery_enabled, 1) = 1 " +
+            "AND (u.city = #{city} OR u.city = #{cityWithSuffix} " +
+            "OR u.city LIKE CONCAT('%', #{city}, '%') " +
+            "OR u.city LIKE CONCAT('%', #{cityWithSuffix}, '%')) " +
+            "ORDER BY COALESCE(u.updated_at, u.created_at) DESC, u.user_id DESC " +
+            "LIMIT 5")
     List<User> findByCity(@Param("city") String city, @Param("cityWithSuffix") String cityWithSuffix, @Param("userId") Long userId);
+
+    // 远方朋友列表（排除自己；如果有当前城市，就优先排除同城）
+    @Select({
+            "<script>",
+            "SELECT u.user_id as userId, u.nickname, u.avatar, u.city,",
+            "p.radar_tags as radarTags, p.radar_sign as radarSign, COALESCE(p.discovery_enabled, 1) as discoveryEnabled",
+            "FROM users u LEFT JOIN user_health_profile p ON u.user_id = p.user_id",
+            "WHERE u.user_id != #{userId}",
+            "AND COALESCE(u.is_active, 1) = 1",
+            "AND COALESCE(p.discovery_enabled, 1) = 1",
+            "<if test=\"city != null and city != ''\">",
+            "AND (u.city IS NULL OR u.city = '' OR NOT (u.city = #{city} OR u.city = #{cityWithSuffix}",
+            "OR u.city LIKE CONCAT('%', #{city}, '%')",
+            "OR u.city LIKE CONCAT('%', #{cityWithSuffix}, '%')))",
+            "</if>",
+            "ORDER BY COALESCE(u.updated_at, u.created_at) DESC, u.user_id DESC",
+            "LIMIT 5",
+            "</script>"
+    })
+    List<User> findDistantPicks(@Param("city") String city, @Param("cityWithSuffix") String cityWithSuffix, @Param("userId") Long userId);
 
     // 搜索用户：精确 ID 优先，昵称始终支持模糊搜索（排除自己）
     @Select({

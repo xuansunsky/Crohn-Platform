@@ -13,17 +13,19 @@ public interface MomentMapper {
     List<Moment> findAll();
 
     /**
-     * 按可见性过滤的动态流：
-     * - public：所有人可见
-     * - comrade（仅战友）：发布者本人，或「我」是已认证战友，才可见
-     * - private（仅自己）：只有发布者本人可见
-     * viewerId = 当前登录用户；viewerVerified = 当前用户是否已认证战友(1/0)
+     * 朋友圈动态流：
+     * - 只展示自己、好友的动态
+     * - private：只有发布者本人可见
+     * - public / comrade：好友关系内可见
      */
     @Select("SELECT m.*, u.nickname, u.avatar FROM moments m " +
             "LEFT JOIN users u ON m.user_id = u.user_id " +
-            "WHERE COALESCE(m.visibility, 'public') = 'public' " +
-            "   OR m.user_id = #{viewerId} " +
-            "   OR (COALESCE(m.visibility, 'public') = 'comrade' AND #{viewerVerified} = 1) " +
+            "WHERE (m.user_id = #{viewerId} " +
+            "   OR EXISTS (SELECT 1 FROM friendships f " +
+            "      WHERE f.status = 'ACCEPTED' " +
+            "      AND ((f.requester_id = #{viewerId} AND f.addressee_id = m.user_id) " +
+            "        OR (f.addressee_id = #{viewerId} AND f.requester_id = m.user_id)))) " +
+            "AND (m.user_id = #{viewerId} OR COALESCE(m.visibility, 'public') != 'private') " +
             "ORDER BY m.created_at DESC")
     List<Moment> findVisible(@Param("viewerId") Long viewerId, @Param("viewerVerified") int viewerVerified);
 
@@ -31,12 +33,13 @@ public interface MomentMapper {
             "LEFT JOIN users u ON m.user_id = u.user_id " +
             "WHERE m.user_id = #{targetId} " +
             "AND (m.user_id = #{viewerId} " +
-            "     OR COALESCE(m.visibility, 'public') = 'public' " +
-            "     OR (COALESCE(m.visibility, 'public') = 'comrade' AND #{canSeeComrade} = 1)) " +
+            "     OR (#{canSeeFriend} = 1 AND COALESCE(m.visibility, 'public') != 'private') " +
+            "     OR (#{canSeeGroup} = 1 AND COALESCE(m.visibility, 'public') = 'public')) " +
             "ORDER BY m.created_at DESC")
     List<Moment> findUserVisible(@Param("viewerId") Long viewerId,
                                  @Param("targetId") Long targetId,
-                                 @Param("canSeeComrade") int canSeeComrade);
+                                 @Param("canSeeFriend") int canSeeFriend,
+                                 @Param("canSeeGroup") int canSeeGroup);
 
     @Select("SELECT COUNT(*) FROM crohn_user_verification v WHERE v.user_id = #{userId} AND v.status = 'APPROVED'")
     int isVerified(@Param("userId") Long userId);

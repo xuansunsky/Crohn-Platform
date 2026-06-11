@@ -7,6 +7,7 @@ import com.xuan.croprogram.mapper.SquadActivityMapper;
 import com.xuan.croprogram.mapper.SquadTaskMapper;
 import com.xuan.croprogram.mapper.UserMapper;
 import com.xuan.croprogram.model.*;
+import com.xuan.croprogram.util.AvatarPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -54,7 +55,7 @@ public class GroupController {
         ChatGroup group = new ChatGroup();
         group.setName(name);
         group.setOwnerId(myId);
-        group.setAvatar("https://api.dicebear.com/7.x/identicon/svg?seed=" + name);
+        group.setAvatar(AvatarPool.pick("group-" + name));
         groupMapper.insertGroup(group);
 
         // 队长入队
