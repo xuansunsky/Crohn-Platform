@@ -41,6 +41,16 @@ public class ExperiencePost {
     private String authorName;
     @TableField(exist = false)
     private String authorAvatar;
+    @TableField(exist = false)
+    private Integer likeCount;
+    @TableField(exist = false)
+    private Integer favoriteCount;
+    @TableField(exist = false)
+    private Integer commentCount;
+    @TableField(exist = false)
+    private Boolean liked;
+    @TableField(exist = false)
+    private Boolean favorited;
 
     protected void onCreate() {
         createdAt = LocalDateTime.now();

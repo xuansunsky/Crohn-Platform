@@ -26,7 +26,7 @@ public interface HealMapper {
     @Update("UPDATE crohn_pain_signal SET status = 0 WHERE user_id = #{userId} AND status = 1")
     void deactivatePainSignal(Long userId);
 
-    @Select("SELECT s.*, u.nickname as name, u.avatar FROM crohn_pain_signal s LEFT JOIN users u ON s.user_id = u.user_id WHERE s.status = 1 AND s.user_id != #{userId} ORDER BY s.created_at DESC")
+    @Select("SELECT s.*, u.nickname as name, u.avatar FROM crohn_pain_signal s LEFT JOIN account_users u ON s.user_id = u.user_id WHERE s.status = 1 AND s.user_id != #{userId} ORDER BY s.created_at DESC")
     List<PainSignal> findActivePainSignals(Long userId);
 
     // --- 暖心安慰 ---

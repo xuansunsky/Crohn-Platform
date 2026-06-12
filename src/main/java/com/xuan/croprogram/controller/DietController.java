@@ -4,8 +4,8 @@ package com.xuan.croprogram.controller;
 import com.xuan.croprogram.mapper.DietReportMapper;
 import com.xuan.croprogram.mapper.FoodMapper;
 import com.xuan.croprogram.model.ApiResponse;
+import com.xuan.croprogram.model.DietFoodComment;
 import com.xuan.croprogram.model.DietReport;
-import com.xuan.croprogram.model.DietReportComment;
 import com.xuan.croprogram.model.Food;
 import com.xuan.croprogram.model.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,41 +65,30 @@ public class DietController {
             food.setCoverImg(coverImg);
             foodMapper.insert(food);
             // 👆 因为加了 @Options，执行完这句，food.getId() 就有值了！
-        } else if (!coverImg.isEmpty()) {
-            food.setCoverImg(coverImg);
         }
 
-        // 4. 记流水账 (插入 Report)
+        // 4. 一人一票：如果之前只投过票，这次发布就把那条记录补完整
         requestReport.setFoodId(food.getId());
         requestReport.setUserId(currentUserId);
-        // 🌟 把前端传过来的 level 赋值给数据库真正需要的 reactionLevel 字段
         requestReport.setReactionLevel(requestLevel);
+        requestReport.setLocation(cleanText(requestReport.getLocation()));
+        requestReport.setContent(cleanText(requestReport.getContent()));
         requestReport.setImagesJson(coverImg);
 
+        DietReport mine = dietReportMapper.findMineByFoodId(food.getId(), currentUserId);
+        if (mine != null) {
+            requestReport.setId(mine.getId());
+            dietReportMapper.updateByOwner(requestReport);
+            foodMapper.updateCover(food.getId(), coverImg);
+            foodMapper.refreshStats(food.getId());
+            return new ApiResponse<>("实测已更新", foodMapper.findById(food.getId()), 200);
+        }
+
         dietReportMapper.insert(requestReport);
-        // 👆 (注意：Mapper 的 @Insert SQL 里千万别写 brand 和 product 这俩假字段，完美骗过数据库)
+        foodMapper.updateCover(food.getId(), coverImg);
+        foodMapper.refreshStats(food.getId());
 
-        // 5. 重新计算大盘数据 (更新 Food)
-        food.setTotalVotes(safeInt(food.getTotalVotes()) + 1);
-
-        // 根据用户的选择，给对应的等级票数 +1
-        int level = requestReport.getReactionLevel();
-        if (level == 1) food.setLevel1Votes(safeInt(food.getLevel1Votes()) + 1);
-        else if (level == 2) food.setLevel2Votes(safeInt(food.getLevel2Votes()) + 1);
-        else if (level == 3) food.setLevel3Votes(safeInt(food.getLevel3Votes()) + 1);
-        else if (level == 4) food.setLevel4Votes(safeInt(food.getLevel4Votes()) + 1);
-        else if (level == 5) food.setLevel5Votes(safeInt(food.getLevel5Votes()) + 1);
-        else if (level == 6) food.setLevel6Votes(safeInt(food.getLevel6Votes()) + 1);
-
-        // 6. 计算核心指标：安全率 = (绿区 + 黄区) / 总人数 * 100
-        int safeCount = safeInt(food.getLevel1Votes()) + safeInt(food.getLevel2Votes());
-        int safeRate = (int) Math.round(((double) safeCount / food.getTotalVotes()) * 100);
-        food.setSafeRate(safeRate);
-
-        // 7. 更新大盘
-        foodMapper.updateStats(food);
-
-        return new ApiResponse<>("战报已收录", food, 200);
+        return new ApiResponse<>("实测已收录", food, 200);
     }
     // 前端调用的“获取首页情报列表”接口
     @GetMapping("/list")
@@ -111,6 +100,138 @@ public class DietController {
         // 极简开发，直接 Mapper 一把梭！
         List<DietReport> reports = dietReportMapper.getReportsByFoodId(foodId);
         return new ApiResponse<>("发送成功", reports, 200);
+    }
+
+    @PostMapping("/foods/{foodId}/vote")
+    @Transactional
+    public ApiResponse<DietReport> voteFood(
+            @PathVariable("foodId") Long foodId,
+            @AuthenticationPrincipal LoginUser loginUser,
+            @RequestBody DietReport requestReport
+    ) {
+        Food food = foodMapper.findById(foodId);
+        if (food == null) {
+            return new ApiResponse<>("这条情报不存在", null, 404);
+        }
+
+        Integer requestLevel = requestReport.getLevel() == null ? requestReport.getReactionLevel() : requestReport.getLevel();
+        if (requestLevel == null || requestLevel < 1 || requestLevel > 6) {
+            return new ApiResponse<>("请选择真实的身体反馈", null, 400);
+        }
+
+        DietReport mine = dietReportMapper.findMineByFoodId(foodId, loginUser.getUserId());
+        if (mine != null) {
+            DietReport update = new DietReport();
+            update.setId(mine.getId());
+            update.setUserId(loginUser.getUserId());
+            update.setReactionLevel(requestLevel);
+            update.setLocation(cleanText(mine.getLocation()));
+            update.setContent(cleanText(mine.getContent()));
+            update.setImagesJson(mine.getImagesJson());
+            dietReportMapper.updateByOwner(update);
+            foodMapper.refreshStats(foodId);
+            return new ApiResponse<>("投票已更新", dietReportMapper.findById(mine.getId()), 200);
+        }
+
+        DietReport report = new DietReport();
+        report.setFoodId(foodId);
+        report.setUserId(loginUser.getUserId());
+        report.setReactionLevel(requestLevel);
+        report.setLocation("");
+        report.setContent("");
+        report.setImagesJson(food.getCoverImg());
+        dietReportMapper.insert(report);
+        foodMapper.refreshStats(foodId);
+        return new ApiResponse<>("投票成功", report, 200);
+    }
+
+    @PostMapping("/foods/{foodId}/feedback")
+    @Transactional
+    public ApiResponse<DietReport> feedbackFood(
+            @PathVariable("foodId") Long foodId,
+            @AuthenticationPrincipal LoginUser loginUser,
+            @RequestBody DietReport requestReport
+    ) {
+        Food food = foodMapper.findById(foodId);
+        if (food == null) {
+            return new ApiResponse<>("这条情报不存在", null, 404);
+        }
+
+        Integer requestLevel = requestReport.getLevel() == null ? requestReport.getReactionLevel() : requestReport.getLevel();
+        if (requestLevel == null || requestLevel < 1 || requestLevel > 6) {
+            return new ApiResponse<>("请选择真实的身体反馈", null, 400);
+        }
+
+        String content = cleanText(requestReport.getContent());
+        if (content.isEmpty()) {
+            return new ApiResponse<>("写一句真实感受再发送", null, 400);
+        }
+
+        DietReport mine = dietReportMapper.findMineByFoodId(foodId, loginUser.getUserId());
+        if (mine != null) {
+            DietReport update = new DietReport();
+            update.setId(mine.getId());
+            update.setUserId(loginUser.getUserId());
+            update.setReactionLevel(requestLevel);
+            update.setLocation(cleanText(requestReport.getLocation()));
+            update.setContent(content);
+            update.setImagesJson(mine.getImagesJson());
+            dietReportMapper.updateByOwner(update);
+            foodMapper.refreshStats(foodId);
+            return new ApiResponse<>("你的反馈已更新", dietReportMapper.findById(mine.getId()), 200);
+        }
+
+        DietReport report = new DietReport();
+        report.setFoodId(foodId);
+        report.setUserId(loginUser.getUserId());
+        report.setReactionLevel(requestLevel);
+        report.setLocation(cleanText(requestReport.getLocation()));
+        report.setContent(content);
+        report.setImagesJson(food.getCoverImg());
+        dietReportMapper.insert(report);
+        foodMapper.refreshStats(foodId);
+        return new ApiResponse<>("你的反馈已收录", report, 200);
+    }
+
+    @GetMapping("/foods/{foodId}/comments")
+    public ApiResponse<List<DietFoodComment>> getFoodComments(@PathVariable("foodId") Long foodId) {
+        return new ApiResponse<>("获取成功", dietReportMapper.getFoodComments(foodId), 200);
+    }
+
+    @PostMapping("/foods/{foodId}/comments")
+    public ApiResponse<DietFoodComment> commentFood(
+            @PathVariable("foodId") Long foodId,
+            @AuthenticationPrincipal LoginUser loginUser,
+            @RequestBody DietFoodComment comment
+    ) {
+        Food food = foodMapper.findById(foodId);
+        if (food == null) {
+            return new ApiResponse<>("这条情报不存在", null, 404);
+        }
+
+        String content = cleanText(comment.getContent());
+        if (content.isEmpty()) {
+            return new ApiResponse<>("写点评论再发送", null, 400);
+        }
+
+        comment.setFoodId(foodId);
+        comment.setUserId(loginUser.getUserId());
+        comment.setContent(content);
+        dietReportMapper.insertFoodComment(comment);
+        return new ApiResponse<>("评论已发布", comment, 200);
+    }
+
+    @PostMapping("/foods/{foodId}/comments/{commentId}/delete")
+    public ApiResponse<String> deleteFoodComment(
+            @PathVariable("foodId") Long foodId,
+            @PathVariable("commentId") Long commentId,
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        int deleted = dietReportMapper.softDeleteFoodCommentByOwner(foodId, commentId, loginUser.getUserId());
+        if (deleted <= 0) {
+            return new ApiResponse<>("只能删除自己的评论", null, 403);
+        }
+        return new ApiResponse<>("评论已删除", null, 200);
     }
 
     @GetMapping("/my-reports")
@@ -127,10 +248,10 @@ public class DietController {
     ) {
         DietReport oldReport = dietReportMapper.findById(reportId);
         if (oldReport == null) {
-            return new ApiResponse<>("这条战报不存在", null, 404);
+            return new ApiResponse<>("这条实测不存在", null, 404);
         }
         if (!oldReport.getUserId().equals(loginUser.getUserId())) {
-            return new ApiResponse<>("只能修改自己的战报", null, 403);
+            return new ApiResponse<>("只能修改自己的实测", null, 403);
         }
 
         Integer requestLevel = requestReport.getLevel() == null ? requestReport.getReactionLevel() : requestReport.getLevel();
@@ -161,7 +282,7 @@ public class DietController {
 
         foodMapper.updateCover(oldReport.getFoodId(), coverImg);
         foodMapper.refreshStats(oldReport.getFoodId());
-        return new ApiResponse<>("战报已更新", dietReportMapper.findById(reportId), 200);
+        return new ApiResponse<>("实测已更新", dietReportMapper.findById(reportId), 200);
     }
 
     @PostMapping("/reports/{reportId}/delete")
@@ -172,10 +293,10 @@ public class DietController {
     ) {
         DietReport oldReport = dietReportMapper.findById(reportId);
         if (oldReport == null) {
-            return new ApiResponse<>("这条战报不存在", null, 404);
+            return new ApiResponse<>("这条实测不存在", null, 404);
         }
         if (!oldReport.getUserId().equals(loginUser.getUserId())) {
-            return new ApiResponse<>("只能删除自己的战报", null, 403);
+            return new ApiResponse<>("只能删除自己的实测", null, 403);
         }
 
         int deleted = dietReportMapper.softDeleteByOwner(reportId, loginUser.getUserId());
@@ -183,39 +304,7 @@ public class DietController {
             return new ApiResponse<>("删除失败，稍后再试", null, 400);
         }
         foodMapper.refreshStats(oldReport.getFoodId());
-        return new ApiResponse<>("战报已删除", null, 200);
-    }
-
-    @GetMapping("/reports/{reportId}/comments")
-    public ApiResponse<List<DietReportComment>> getReportComments(@PathVariable("reportId") Long reportId) {
-        return new ApiResponse<>("获取成功", dietReportMapper.getCommentsByReportId(reportId), 200);
-    }
-
-    @PostMapping("/reports/{reportId}/comments")
-    public ApiResponse<DietReportComment> commentReport(
-            @PathVariable("reportId") Long reportId,
-            @AuthenticationPrincipal LoginUser loginUser,
-            @RequestBody DietReportComment comment
-    ) {
-        DietReport report = dietReportMapper.findById(reportId);
-        if (report == null) {
-            return new ApiResponse<>("这条战报不存在", null, 404);
-        }
-
-        String content = cleanText(comment.getContent());
-        if (content.isEmpty()) {
-            return new ApiResponse<>("写点评论再发送", null, 400);
-        }
-
-        comment.setReportId(reportId);
-        comment.setUserId(loginUser.getUserId());
-        comment.setContent(content);
-        dietReportMapper.insertComment(comment);
-        return new ApiResponse<>("评论已发布", comment, 200);
-    }
-
-    private int safeInt(Integer value) {
-        return value == null ? 0 : value;
+        return new ApiResponse<>("实测已删除", null, 200);
     }
 
     private String cleanText(String value) {

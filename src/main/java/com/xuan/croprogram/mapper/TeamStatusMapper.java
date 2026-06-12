@@ -32,7 +32,7 @@ public interface TeamStatusMapper {
             "       s.emoji, s.text, s.description, s.accent, s.zone, s.updated_at AS updatedAt, " +
             "       (SELECT COUNT(*) FROM crohn_status_reaction r WHERE r.target_user_id = u.user_id) AS reactions, " +
             "       (SELECT COUNT(*) FROM crohn_user_verification v WHERE v.user_id = u.user_id AND v.status = 'APPROVED') AS verified " +
-            "FROM users u " +
+            "FROM account_users u " +
             "LEFT JOIN crohn_user_status s ON s.user_id = u.user_id AND s.updated_at >= DATE_SUB(NOW(), INTERVAL 1 DAY) " +
             "WHERE u.user_id = #{userId}")
     StatusView findMyStatus(@Param("userId") Long userId);
@@ -46,7 +46,7 @@ public interface TeamStatusMapper {
             "       (SELECT COUNT(*) FROM crohn_status_reaction r2 WHERE r2.target_user_id = u.user_id AND r2.sender_id = #{myId} AND DATE(r2.created_at) = CURDATE()) AS reactedToday, " +
             "       (SELECT COUNT(*) FROM crohn_user_verification v WHERE v.user_id = u.user_id AND v.status = 'APPROVED') AS verified " +
             "FROM friendships f " +
-            "JOIN users u ON (CASE WHEN f.requester_id = #{myId} THEN f.addressee_id ELSE f.requester_id END = u.user_id) " +
+            "JOIN account_users u ON (CASE WHEN f.requester_id = #{myId} THEN f.addressee_id ELSE f.requester_id END = u.user_id) " +
             "LEFT JOIN crohn_user_status s ON s.user_id = u.user_id AND s.updated_at >= DATE_SUB(NOW(), INTERVAL 1 DAY) " +
             "WHERE (f.requester_id = #{myId} OR f.addressee_id = #{myId}) AND f.status = 'ACCEPTED' " +
             "ORDER BY (s.updated_at IS NULL), s.updated_at DESC")
@@ -60,7 +60,7 @@ public interface TeamStatusMapper {
             "       (SELECT COUNT(*) FROM crohn_status_reaction r WHERE r.target_user_id = u.user_id) AS reactions, " +
             "       (SELECT COUNT(*) FROM crohn_status_reaction r2 WHERE r2.target_user_id = u.user_id AND r2.sender_id = #{myId} AND DATE(r2.created_at) = CURDATE()) AS reactedToday, " +
             "       (SELECT COUNT(*) FROM crohn_user_verification v WHERE v.user_id = u.user_id AND v.status = 'APPROVED') AS verified " +
-            "FROM users u " +
+            "FROM account_users u " +
             "LEFT JOIN crohn_user_status s ON s.user_id = u.user_id AND s.updated_at >= DATE_SUB(NOW(), INTERVAL 1 DAY) " +
             "WHERE u.user_id = #{targetId}")
     StatusView findUserStatusFor(@Param("targetId") Long targetId, @Param("myId") Long myId);
@@ -91,7 +91,7 @@ public interface TeamStatusMapper {
      * 最近给 TA 送关心的人（昵称+头像+类型）
      */
     @Select("SELECT u.nickname, u.avatar, r.reaction_type AS type " +
-            "FROM crohn_status_reaction r JOIN users u ON r.sender_id = u.user_id " +
+            "FROM crohn_status_reaction r JOIN account_users u ON r.sender_id = u.user_id " +
             "WHERE r.target_user_id = #{targetUserId} " +
             "ORDER BY r.created_at DESC LIMIT 8")
     List<Map<String, Object>> findReactors(@Param("targetUserId") Long targetUserId);

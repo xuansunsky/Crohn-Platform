@@ -9,30 +9,30 @@ import java.util.List;
 public interface UserMapper {
 
     // 查询用户通过手机号
-    @Select("SELECT * FROM users WHERE phone_number = #{phoneNumber}")
+    @Select("SELECT * FROM account_users WHERE phone_number = #{phoneNumber}")
     User findByPhoneNumber(String phoneNumber);
 
     // 插入用户
-    @Insert("INSERT INTO users(phone_number, password, nickname, role_id) " +
+    @Insert("INSERT INTO account_users(phone_number, password, nickname, role_id) " +
             "VALUES(#{phoneNumber}, #{password}, #{nickname}, #{roleId})")
     void insertUser(User user);
     // 1. 拉取所有子民清单（排除掉敏感的密码，只拿关键信息）
-    @Select("SELECT user_id, phone_number as phoneNumber, nickname as nickname, role_id as roleId FROM users")
+    @Select("SELECT user_id, phone_number as phoneNumber, nickname as nickname, role_id as roleId FROM account_users")
     List<User> findAllUsers();
 
     // 2. 修改角色：这就是“封王”或“贬职”的核心动作
-    @Update("UPDATE users SET role_id = #{roleId} WHERE user_id = #{userId}")
+    @Update("UPDATE account_users SET role_id = #{roleId} WHERE user_id = #{userId}")
     void updateRole(@Param("userId") Long userId, @Param("roleId") Long roleId);
 
     // 👇 2. 新增：这是我们要补的查询逻辑
     // 专门查 role_id，不用把整个 User 对象都查出来，节省内存
-    @Select("SELECT role_id FROM users WHERE user_id = #{userId}")
+    @Select("SELECT role_id FROM account_users WHERE user_id = #{userId}")
     Long selectRoleIdByUserId(@Param("userId") Long userId);
 
     // 同城精选列表（排除自己）
     @Select("SELECT u.user_id as userId, u.nickname, u.avatar, u.city, " +
             "p.radar_tags as radarTags, p.radar_sign as radarSign, COALESCE(p.discovery_enabled, 1) as discoveryEnabled " +
-            "FROM users u LEFT JOIN user_health_profile p ON u.user_id = p.user_id " +
+            "FROM account_users u LEFT JOIN user_health_profile p ON u.user_id = p.user_id " +
             "WHERE u.user_id != #{userId} AND COALESCE(u.is_active, 1) = 1 " +
             "AND COALESCE(p.discovery_enabled, 1) = 1 " +
             "AND (u.city = #{city} OR u.city = #{cityWithSuffix} " +
@@ -47,7 +47,7 @@ public interface UserMapper {
             "<script>",
             "SELECT u.user_id as userId, u.nickname, u.avatar, u.city,",
             "p.radar_tags as radarTags, p.radar_sign as radarSign, COALESCE(p.discovery_enabled, 1) as discoveryEnabled",
-            "FROM users u LEFT JOIN user_health_profile p ON u.user_id = p.user_id",
+            "FROM account_users u LEFT JOIN user_health_profile p ON u.user_id = p.user_id",
             "WHERE u.user_id != #{userId}",
             "AND COALESCE(u.is_active, 1) = 1",
             "AND COALESCE(p.discovery_enabled, 1) = 1",
@@ -65,7 +65,7 @@ public interface UserMapper {
     // 搜索用户：精确 ID 优先，昵称始终支持模糊搜索（排除自己）
     @Select({
             "<script>",
-            "SELECT user_id as userId, nickname, avatar, city FROM users",
+            "SELECT user_id as userId, nickname, avatar, city FROM account_users",
             "WHERE user_id != #{userId}",
             "AND COALESCE(is_active, 1) = 1",
             "AND (",
@@ -97,7 +97,7 @@ public interface UserMapper {
     List<User> searchUsers(@Param("keyword") String keyword, @Param("targetId") Long targetId, @Param("userId") Long userId);
 
     // 按 userId 查单个用户（含昵称头像）
-    @Select("SELECT user_id as userId, nickname, avatar FROM users WHERE user_id = #{userId}")
+    @Select("SELECT user_id as userId, nickname, avatar FROM account_users WHERE user_id = #{userId}")
     User findByUserId(@Param("userId") Long userId);
 
 }

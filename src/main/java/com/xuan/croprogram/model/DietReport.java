@@ -16,7 +16,6 @@ public class DietReport {
     private Integer isDeleted;
     private String userName;
     private String userAvatar;
-    private Integer commentCount;
     private String brand;     // 接前端的 formData.brand
     private String product;
     private String coverImg;// 接前端的 formData.product

@@ -42,7 +42,7 @@ public interface GroupMapper {
 
     // 群成员（带昵称头像）
     @Select("SELECT m.*, u.nickname, u.avatar FROM group_members m " +
-            "LEFT JOIN users u ON m.user_id = u.user_id " +
+            "LEFT JOIN account_users u ON m.user_id = u.user_id " +
             "WHERE m.group_id = #{groupId} ORDER BY m.joined_at ASC")
     List<GroupMember> findMembers(@Param("groupId") Long groupId);
 

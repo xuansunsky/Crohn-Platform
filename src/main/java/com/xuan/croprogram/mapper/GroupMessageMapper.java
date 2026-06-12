@@ -17,7 +17,7 @@ public interface GroupMessageMapper {
     // 群聊历史（带发送者昵称头像，按时间升序）
     @Select("SELECT gm.*, u.nickname AS senderName, u.avatar AS senderAvatar " +
             "FROM group_messages gm " +
-            "LEFT JOIN users u ON gm.sender_id = u.user_id " +
+            "LEFT JOIN account_users u ON gm.sender_id = u.user_id " +
             "WHERE gm.group_id = #{groupId} ORDER BY gm.created_at ASC")
     List<GroupMessage> findByGroup(@Param("groupId") Long groupId);
 

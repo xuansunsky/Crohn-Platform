@@ -17,7 +17,7 @@ public interface UserCenterMapper {
             "  p.diagnosed_at, p.health_phase, p.phase_start_date,",
             "  p.diet_strategy, p.bowel_status, p.badges,",
             "  p.radar_tags, p.radar_sign, COALESCE(p.discovery_enabled, 1) as discoveryEnabled",
-            "FROM users u",
+            "FROM account_users u",
             "LEFT JOIN user_health_profile p ON u.user_id = p.user_id",
             "WHERE u.user_id = #{userId}",
             "</script>"
@@ -47,13 +47,13 @@ public interface UserCenterMapper {
     @Select("SELECT u.nickname, u.avatar, " +
             "h.health_phase as healthPhase, h.diet_strategy as dietStrategy, " +
             "h.bowel_status as bowelStatus, h.phase_start_date as phaseStartDate " +
-            "FROM users u " +
+            "FROM account_users u " +
             "LEFT JOIN user_health_profile h ON u.user_id = h.user_id " +
             "WHERE u.user_id = #{userId}")
     UserHealthProfile getCenterInfo(Long userId);
     @Update({
             "<script>",
-            "UPDATE users",
+            "UPDATE account_users",
             "<set>",
             "  <if test='nickname != null and nickname != \"\"'> nickname = #{nickname}, </if>",
             "  <if test='avatar != null and avatar != \"\"'> avatar = #{avatar}, </if>",

@@ -23,7 +23,7 @@ public interface UserVerificationMapper {
      * 待审核列表（管理员）
      */
     @Select("SELECT v.*, u.nickname, u.avatar FROM crohn_user_verification v " +
-            "LEFT JOIN users u ON v.user_id = u.user_id " +
+            "LEFT JOIN account_users u ON v.user_id = u.user_id " +
             "WHERE v.status = 'PENDING' ORDER BY v.created_at ASC")
     List<UserVerification> findPending(@Param("status") String status);
 

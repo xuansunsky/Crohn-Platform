@@ -5,7 +5,7 @@
 --      想换成不同作者，把 @AUTHOR 换成具体 user_id 即可。
 -- ============================================================
 
-SET @AUTHOR = (SELECT user_id FROM users ORDER BY user_id LIMIT 1);
+SET @AUTHOR = (SELECT user_id FROM account_users ORDER BY user_id LIMIT 1);
 
 INSERT INTO experience_posts(user_id, title, summary, icon, theme, tags, cover_image, created_at) VALUES
 (@AUTHOR,

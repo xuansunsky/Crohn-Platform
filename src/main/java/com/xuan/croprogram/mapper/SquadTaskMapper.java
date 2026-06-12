@@ -14,8 +14,8 @@ public interface SquadTaskMapper {
     void insert(SquadTask task);
 
     @Select("SELECT t.*, o.nickname AS ownerName, a.nickname AS assigneeName FROM squad_tasks t " +
-            "LEFT JOIN users o ON t.owner_id = o.user_id " +
-            "LEFT JOIN users a ON t.assignee_id = a.user_id " +
+            "LEFT JOIN account_users o ON t.owner_id = o.user_id " +
+            "LEFT JOIN account_users a ON t.assignee_id = a.user_id " +
             "WHERE t.group_id = #{groupId} ORDER BY t.done ASC, t.created_at DESC")
     List<SquadTask> findByGroup(@Param("groupId") Long groupId);
 

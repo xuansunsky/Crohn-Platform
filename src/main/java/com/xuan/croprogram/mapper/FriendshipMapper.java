@@ -34,23 +34,23 @@ public interface FriendshipMapper {
             "  f.id as friendshipId, " +
             "  f.status, " +
             "  (SELECT CASE WHEN m.type = 'image' THEN '[图片]' ELSE m.content END " +
-            "   FROM messages m " +
+            "   FROM friend_messages m " +
             "   WHERE (m.sender_id = #{myId} AND m.receiver_id = u.user_id) " +
             "      OR (m.sender_id = u.user_id AND m.receiver_id = #{myId}) " +
             "   ORDER BY m.created_at DESC LIMIT 1) AS lastMsg, " +
             "  (SELECT DATE_FORMAT(m.created_at, '%m-%d %H:%i') " +
-            "   FROM messages m " +
+            "   FROM friend_messages m " +
             "   WHERE (m.sender_id = #{myId} AND m.receiver_id = u.user_id) " +
             "      OR (m.sender_id = u.user_id AND m.receiver_id = #{myId}) " +
             "   ORDER BY m.created_at DESC LIMIT 1) AS lastTime, " +
-            "  (SELECT COUNT(*) FROM messages m " +
+            "  (SELECT COUNT(*) FROM friend_messages m " +
             "   WHERE m.sender_id = u.user_id AND m.receiver_id = #{myId} AND m.is_read = 0) AS unread " +
             "FROM friendships f " +
-            "JOIN users u ON (CASE WHEN f.requester_id = #{myId} THEN f.addressee_id ELSE f.requester_id END = u.user_id) " +
+            "JOIN account_users u ON (CASE WHEN f.requester_id = #{myId} THEN f.addressee_id ELSE f.requester_id END = u.user_id) " +
             "WHERE (f.requester_id = #{myId} OR f.addressee_id = #{myId}) " +
             "AND f.status = 'ACCEPTED' " +
             "ORDER BY COALESCE((" +
-            "  SELECT MAX(m.created_at) FROM messages m " +
+            "  SELECT MAX(m.created_at) FROM friend_messages m " +
             "  WHERE (m.sender_id = #{myId} AND m.receiver_id = u.user_id) " +
             "     OR (m.sender_id = u.user_id AND m.receiver_id = #{myId})" +
             "), f.updated_at, f.created_at) DESC")
@@ -64,7 +64,7 @@ public interface FriendshipMapper {
             "  f.id as friendshipId, " +
             "  f.status " +
             "FROM friendships f " +
-            "JOIN users u ON f.requester_id = u.user_id " +
+            "JOIN account_users u ON f.requester_id = u.user_id " +
             "WHERE f.addressee_id = #{myId} AND f.status = 'PENDING'")
     List<FriendDto> findPendingRequests(Long myId);
 

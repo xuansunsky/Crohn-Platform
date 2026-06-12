@@ -6,7 +6,7 @@
 -- ----------------------------
 -- drugs 种子数据（7条）
 -- ----------------------------
-INSERT INTO `drugs` (`name`, `type`, `type_label`, `icon`, `tag`, `safety_rate`, `response_rate`, `company`, `tags_json`, `description`, `mechanism`, `price_original`, `price_reimbursed`, `side_effects`) VALUES
+INSERT INTO `medical_drugs` (`name`, `type`, `type_label`, `icon`, `tag`, `safety_rate`, `response_rate`, `company`, `tags_json`, `description`, `mechanism`, `price_original`, `price_reimbursed`, `side_effects`) VALUES
 ('乌帕替尼缓释片 (瑞福 / Rinvoq)', 'targeted', '小分子靶向药', '💊', '口服高效', 85, 78, '美国艾伯维 (AbbVie)',
  '["JAK1选择性抑制剂","口服方便","15mg/30mg缓释","最快起效"]',
  '最新一代选择性 JAK1 抑制剂，针对中重度活动期克罗恩具有卓越的缓解作用。免去了跑医院输液的困扰，通常在1-2周内即可见效。',
@@ -60,7 +60,7 @@ INSERT INTO `drugs` (`name`, `type`, `type_label`, `icon`, `tag`, `safety_rate`,
 -- ----------------------------
 -- hospitals 种子数据（5条）
 -- ----------------------------
-INSERT INTO `hospitals` (`name`, `level`, `region`, `rating`, `recommend_rate`, `green_channel`, `response_time`, `scope_wait`, `mre_wait`, `difficulty`, `injection_room`, `techs_json`, `summary`, `doctors_json`, `tips_json`) VALUES
+INSERT INTO `medical_hospitals` (`name`, `level`, `region`, `rating`, `recommend_rate`, `green_channel`, `response_time`, `scope_wait`, `mre_wait`, `difficulty`, `injection_room`, `techs_json`, `summary`, `doctors_json`, `tips_json`) VALUES
 ('上海交通大学医学院附属仁济医院', '三甲', 'shanghai', 4.9, 97, 1, '48小时内', '约1-2周', '约2-3周', '极难', 1,
  '["气囊辅助小肠镜","胶囊内镜","IBD多学科MDT","粪菌移植FMT","生物制剂输液中心"]',
  '国内IBD治疗天花板，炎症性肠病中心年诊疗量超万人次。冉志华教授团队是克罗恩精准诊疗领域的标杆，生物制剂输液中心配套完善，双通道审批速度全国最快之一。',

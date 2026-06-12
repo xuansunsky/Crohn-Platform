@@ -75,6 +75,33 @@ public class MomentController {
         return new ApiResponse<>("发布成功", null, 200);
     }
 
+    @PostMapping("/update/{id}")
+    public ApiResponse<String> update(
+            @PathVariable Long id,
+            @AuthenticationPrincipal LoginUser loginUser,
+            @RequestBody Moment request
+    ) {
+        Moment moment = momentMapper.findById(id);
+        if (moment == null) return new ApiResponse<>("动态不存在", null, 404);
+        if (!moment.getUserId().equals(loginUser.getUserId()))
+            return new ApiResponse<>("只能编辑自己的动态", null, 403);
+
+        String content = request.getContent() == null ? "" : request.getContent().trim();
+        String imagesJson = request.getImagesJson();
+        if (content.isEmpty() && (imagesJson == null || imagesJson.trim().isEmpty())) {
+            return new ApiResponse<>("写点什么或加张图吧", null, 400);
+        }
+
+        moment.setContent(content);
+        moment.setImagesJson(imagesJson);
+        moment.setLocation(request.getLocation());
+        moment.setVisibility(request.getVisibility());
+
+        int updated = momentMapper.updateByOwner(moment);
+        if (updated <= 0) return new ApiResponse<>("保存失败", null, 400);
+        return new ApiResponse<>("已保存", null, 200);
+    }
+
     @PostMapping("/like/{id}")
     public ApiResponse<String> like(@PathVariable Long id, @AuthenticationPrincipal LoginUser loginUser) {
         Long userId = loginUser.getUserId();

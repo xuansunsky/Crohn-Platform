@@ -13,7 +13,7 @@ public interface SquadActivityMapper {
     void insert(SquadActivity activity);
 
     @Select("SELECT a.*, u.nickname FROM squad_activities a " +
-            "LEFT JOIN users u ON a.user_id = u.user_id " +
+            "LEFT JOIN account_users u ON a.user_id = u.user_id " +
             "WHERE a.group_id = #{groupId} ORDER BY a.created_at DESC LIMIT 20")
     List<SquadActivity> findByGroup(@Param("groupId") Long groupId);
 }

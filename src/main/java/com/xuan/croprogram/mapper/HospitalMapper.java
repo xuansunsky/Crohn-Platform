@@ -9,9 +9,9 @@ import java.util.List;
 @Mapper
 public interface HospitalMapper {
 
-    @Select("SELECT * FROM hospitals ORDER BY rating DESC")
+    @Select("SELECT * FROM medical_hospitals ORDER BY rating DESC")
     List<Hospital> findAll();
 
-    @Select("SELECT * FROM hospitals WHERE region = #{region} ORDER BY rating DESC")
+    @Select("SELECT * FROM medical_hospitals WHERE region = #{region} ORDER BY rating DESC")
     List<Hospital> findByRegion(String region);
 }

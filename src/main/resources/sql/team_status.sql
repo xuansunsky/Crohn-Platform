@@ -53,4 +53,4 @@ ALTER TABLE `experience_posts` ADD COLUMN `cover_image` VARCHAR(512) DEFAULT NUL
 ALTER TABLE `experience_posts` ADD COLUMN `media` TEXT DEFAULT NULL COMMENT '正文图集/视频 JSON 数组（最多9条）';
 
 -- 7. 动态可见范围（public 公开 / comrade 仅战友 / private 仅自己）
-ALTER TABLE `moments` ADD COLUMN `visibility` VARCHAR(16) DEFAULT 'public' COMMENT '可见范围：public/comrade/private';
+ALTER TABLE `social_moments` ADD COLUMN `visibility` VARCHAR(16) DEFAULT 'public' COMMENT '可见范围：public/comrade/private';
